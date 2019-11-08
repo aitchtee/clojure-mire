@@ -1,6 +1,6 @@
 (ns test-rooms
-  (:require [mire.rooms :refer :all]
-            [clojure.test :refer :all]))
+  (:use [mire.rooms]
+        [clojure.test]))
 
 (defn room-fixture [f]
   (with-redefs [rooms (atom (load-rooms {} "resources/rooms/"))]
