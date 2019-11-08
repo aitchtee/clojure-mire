@@ -15,9 +15,12 @@
   "Get a description of the surrounding environs and its contents."
   []
   (str (:desc @*current-room*)
-       "\nExits: " (keys @(:exits @*current-room*)) "\n"
-       (join "\n" (map #(str "There is " % " here.\n")
-                           @(:items @*current-room*)))))
+        "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
+        (join "\r\n" (map #(str "There is " % " here.\r\n")
+                           @(:items @*current-room*)))
+        (join "\r\n" (map #(str "Player " % " is here.\r\n")
+                           @(:inhabitants @*current-room*)))
+  ))
 
 (defn move
   "\"♬ We gotta get out of this place... ♪\" Give a direction."
@@ -78,7 +81,7 @@
   (let [message (join " " words)]
     (doseq [inhabitant (disj @(:inhabitants @*current-room*) *player-name*)]
       (binding [*out* (player-streams inhabitant)]
-        (println message)
+        (println *player-name* ": " message)
         (println prompt)))
     (str "You said " message)))
 
