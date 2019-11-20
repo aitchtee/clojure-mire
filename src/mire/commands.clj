@@ -9,30 +9,48 @@
   (alter from disj obj)
   (alter to conj obj))
 
+(defn- move-delete
+  [obj from]
+  (alter from disj obj))
+
+
+
+
 ;; Command functions
 
 (defn look
   "Get a description of the surrounding environs and its contents."
   []
   (str (:desc @*current-room*)
-       "\nExits: " (keys @(:exits @*current-room*)) "\n"
-       (join "\n" (map #(str "There is " % " here.\n")
+       "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
+       (join "\r\n" (map #(str "There is " % " here.\r\n")
                            @(:items @*current-room*)))))
 
 (defn move
   "\"♬ We gotta get out of this place... ♪\" Give a direction."
   [direction]
   (dosync
-   (let [target-name ((:exits @*current-room*) (keyword direction))
-         target (@rooms target-name)]
-     (if target
+   (let [target-name ((:exits @*current-room*) (keyword direction))      ;;получить все выходы в исходной комнате и обозначить путь
+         target (@rooms target-name)]                                    ;; получение комнаты из списка
+     (if (not= @( :lock target) #{(some @( :lock target) @*inventory*)}) ;; Если замок не равен предменту из инвентаря то
+        (if (not= @( :lock target) #{})                                  ;;     (Если замок не равен пустане то
+           ( str "LOCK!!! Find an " @( :lock target) " to pass " )       ;;        выводим сообщение )
+        (if target                                                          ;;   Иначе переходим в комнату
+           (do
+             (move-between-refs *player-name*
+                                (:inhabitants @*current-room*)
+                                (:inhabitants target))
+             (ref-set *current-room* target)
+             (look))
+        "You can't go that way."))
+    (if target                                                            ;; Иначе преходим в комнату
        (do
          (move-between-refs *player-name*
                             (:inhabitants @*current-room*)
                             (:inhabitants target))
          (ref-set *current-room* target)
          (look))
-       "You can't go that way."))))
+    "You can't go that way.")))))
 
 (defn grab
   "Pick something up."
@@ -48,19 +66,21 @@
 (defn discard
   "Put something down that you're carrying."
   [thing]
+  (if (= #{(keyword thing)} @( :lock @*current-room*))                              ;;Если вещь это ключ от замка, то ты
+   (str "Here you cannot throw " @( :lock @*current-room*))                         ;; то ты ее не выбросишь:)
   (dosync
    (if (carrying? thing)
      (do (move-between-refs (keyword thing)
                             *inventory*
                             (:items @*current-room*))
          (str "You dropped the " thing "."))
-     (str "You're not carrying a " thing "."))))
+     (str "You're not carrying a " thing ".")))))
 
 (defn inventory
   "See what you've got."
   []
-  (str "You are carrying:\n"
-       (join "\n" (seq @*inventory*))))
+  (str "You are carrying:\r\n"
+       (join "\r\n" (seq @*inventory*))))
 
 (defn detect
   "If you have the detector, you can see which room an item is in."
@@ -85,7 +105,7 @@
 (defn help
   "Show available commands and what they do."
   []
-  (join "\n" (map #(str (key %) ": " (:doc (meta (val %))))
+  (join "\r\n" (map #(str (key %) ": " (:doc (meta (val %))))
                       (dissoc (ns-publics 'mire.commands)
                               'execute 'commands))))
 
