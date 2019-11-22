@@ -34,7 +34,7 @@
          target (@rooms target-name)]                                    ;; получение комнаты из списка
      (if (not= @( :lock target) #{(some @( :lock target) @*inventory*)}) ;; Если замок не равен предменту из инвентаря то
         (if (not= @( :lock target) #{})                                  ;;     (Если замок не равен пустане то
-           ( str "LOCK!!! Find an " @( :lock target) " to pass " )       ;;        выводим сообщение )
+           ( str "LOCK!!! Find an " ( seq @( :lock target)) " to pass " )       ;;        выводим сообщение )
         (if target                                                          ;;   Иначе переходим в комнату
            (do
              (move-between-refs *player-name*
@@ -67,7 +67,7 @@
   "Put something down that you're carrying."
   [thing]
   (if (= #{(keyword thing)} @( :lock @*current-room*))                              ;;Если вещь это ключ от замка, то ты
-   (str "Here you cannot throw " @( :lock @*current-room*))                         ;; то ты ее не выбросишь:)
+   (str "Here you cannot throw "(seq  @( :lock @*current-room*)))                         ;; то ты ее не выбросишь:)
   (dosync
    (if (carrying? thing)
      (do (move-between-refs (keyword thing)
