@@ -1,6 +1,6 @@
 (ns mire.server
   (:use [mire.player]
-        [mire.commands :only [discard look execute]]
+        [mire.commands :only [discard look execute changeStatus isBusy?Players]]
         [mire.rooms :only [add-rooms rooms]])
   (:use [clojure.java.io :only [reader writer]]
         [server.socket :only [create-server]]))
@@ -29,12 +29,19 @@
     ;; We have to nest this in another binding call instead of using
     ;; the one above so *in* and *out* will be bound to the socket
     (print "\nWhat is your name? ") (flush)
-    (binding [*player-name* (get-unique-player-name (read-line))
+
+    (def player-name (get-unique-player-name (read-line)) )    ;; Устанавливаю переменной player-name имя игрока, введеное в консоли
+    (def hp 100)
+    (binding [
+              *player-name* player-name
               *current-room* (ref (@rooms :start))
-              *inventory* (ref #{})]
+              *inventory* (ref #{})
+              *HP* (ref hp)
+              ]
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)
-       (commute player-streams assoc *player-name* *out*))
+       (commute player-streams assoc *player-name* *out*)
+      )
 
       (println (look)) (print prompt) (flush)
 
