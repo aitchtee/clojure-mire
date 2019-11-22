@@ -10,6 +10,7 @@
             :desc (:desc room)
             :exits (ref (:exits room))
             :items (ref (or (:items room) #{}))
+            :lock (ref (or (:lock room) #{}))
             :inhabitants (ref #{})}})))
 
 (defn load-rooms
@@ -30,3 +31,7 @@
 (defn room-contains?
   [room thing]
   (@(:items room) (keyword thing)))
+
+(defn room-containslock?
+  [room lock1]
+  (@(:lock room) (keyword lock1)))
