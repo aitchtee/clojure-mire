@@ -33,17 +33,10 @@
   []
 
   (str (:desc @*current-room*)
-<<<<<<< HEAD
-        "\n\rExits: " (keys @(:exits @*current-room*)) "\n\r"
-        (join "\n\r" (map #(str "There is " % " here.\n\r")
-                           @(:items @*current-room*)))
-        (join "\n\r" (map #(str "Player " % " is here.\n\r")
-=======
        "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
        (str (join "\r\n" (map #(str "There is " % " here.\r\n")
                            @(:items @*current-room*)))
             (join "\r\n" (map #(str "Player is " % " here.\r\n")
->>>>>>> 0c508ffe81f35305ee357ad0d8efb265c54cbec2
                            @(:inhabitants @*current-room*)))
 
 ;;             (doseq [namePlayer1 (map :namePlayer1 isBusy?Players)
@@ -68,19 +61,6 @@
   [direction]
 
   (dosync
-<<<<<<< HEAD
-    (let [target-name ((:exits @*current-room*) (keyword direction))
-         target (@rooms target-name)]
-      (if target
-            (do
-              (move-between-refs *player-name*
-                                (:inhabitants @*current-room*)
-                                (:inhabitants target))
-              (ref-set *current-room* target)
-              (look))
-        "You can't go that way.")
-    )))
-=======
    (let [target-name ((:exits @*current-room*) (keyword direction))      ;;получить все выходы в исходной комнате и обозначить путь
          target (@rooms target-name)]                                    ;; получение комнаты из списка
      (if (not= @( :lock target) #{(some @( :lock target) @*inventory*)}) ;; Если замок не равен предменту из инвентаря то
@@ -102,7 +82,6 @@
          (ref-set *current-room* target)
          (look))
     "You can't go that way.")))))
->>>>>>> 0c508ffe81f35305ee357ad0d8efb265c54cbec2
 
 (defn grab
   "Pick something up."
@@ -131,13 +110,8 @@
 (defn inventory
   "See what you've got."
   []
-<<<<<<< HEAD
   (str "You are carrying:\n\r"
        (join "\n\r" (seq @*inventory*))))
-=======
-  (str "You are carrying:\r\n"
-       (join "\r\n" (seq @*inventory*))))
->>>>>>> 0c508ffe81f35305ee357ad0d8efb265c54cbec2
 
 (defn detect
   "If you have the detector, you can see which room an item is in."
@@ -313,18 +287,6 @@
                   )
   )
 
-<<<<<<< HEAD
-(defn cleanup []
-  "Drop all inventory."
-  (dosync
-   (doseq [item @*inventory*]
-     (discard item))
-  ;  (commute player-streams dissoc *player-name*)
-  ;  (commute (:inhabitants @*current-room*)
-  ;           disj *player-name*)
-  ))
-
-=======
   (if (or (not (contains? @(:inhabitants @*current-room*) name2player))
           (contains? mapPlayers name2player)
           (= name2player *player-name*))
@@ -333,7 +295,6 @@
   )
 )
 ;;==================================
->>>>>>> 0c508ffe81f35305ee357ad0d8efb265c54cbec2
 ;; Command data
 
 (def commands {"move" move
@@ -347,17 +308,12 @@
                "detect" detect
                "look" look
                "say" say
-<<<<<<< HEAD
-               "help" help
-               "cleanup" cleanup})
-=======
                "tell" sayWho
                "help" help
                "play" provPlayer
                "play-" play-
                "ei" exchange-inventory
                })
->>>>>>> 0c508ffe81f35305ee357ad0d8efb265c54cbec2
 
 ;; Command handling
 
