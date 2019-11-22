@@ -3,6 +3,9 @@
 (def ^:dynamic *current-room*)
 (def ^:dynamic *inventory*)
 (def ^:dynamic *player-name*)
+(def ^:dynamic *HP*)
+;; (def ^:dynamic *isHeBusy?*)
+
 
 (def prompt "> ")
 (def player-streams (ref {}))
