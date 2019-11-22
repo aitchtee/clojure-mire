@@ -31,18 +31,11 @@
                            @(:items @*current-room*)))
             (join "\r\n" (map #(str "Player is " % " here.\r\n")
                            @(:inhabitants @*current-room*)))
-
-;;             (doseq [namePlayer1 (map :namePlayer1 isBusy?Players)
-;;                       namePlayer2 (map :namePlayer2 isBusy?Players)]
-;;                   (join "\r\n" (str "Playing : " namePlayer1 " - " namePlayer2))
-;;             )
-
-;;             (join "\r\n" (map #(str "HP is " % " .\r\n") [(str @*HP*)]))
-;;             (join "\r\n" (str "HP is " @*HP* " .\r\n"))
-;;             "HP is " @*HP* " .\r\n"
-;;             "isHeBusy? " @*isHeBusy?* " .\r\n"
        )
 
+;;        (for [s @player-streams]
+;;          (println s)
+;;          )
        (doseq [namePlayers isBusy?Players]
          (println "Playing : " (namePlayers :namePlayer1) " - " (namePlayers :namePlayer2))
        )
@@ -113,7 +106,7 @@
         (println prompt)))
     (str "You said " message)))
 
-(defn sayWho
+(defn tell
   "Say something out loud so everyone in the room can hear."
   [namePlayer]
 
@@ -133,43 +126,9 @@
   (join "\r\n" (map #(str (key %) ": " (:doc (meta (val %))))
                       (dissoc (ns-publics 'mire.commands)
                               'execute 'commands))))
-;; =============================================================================================================
-(defn rps-game                                              ;; Игра Камень-Ножницы-Бумага
-  "Rock-Paper-Scissors game."                                ;; Это типа ее описание
-  []                                                        ;; Аргументов нет(А что передавать можно то?)
-  (println "This is Rock-Paper-Scissors game")              ;; Говорим, что это за игра
-
-  (changeStatus *player-name* "Laptop")
-
-  (def rps [:rock :paper :scissors])                        ;; Объявляем вектор из 3х элементов игры
-  (def laptop                                               ;; Здесь хранится ход ноута(системы, или бота, или другого игрока)
-    (.indexOf rps (rand-nth rps))                           ;; получаем индекс(с 0) рандомного элемента массива элементов игры(система ходит рандомно), т.е как бы система делает ход
-  )
-
-  (println "Laptop is ready. Your move(1 - rock ; 2 - paper ; 3 - scissors) : ")  ;; Говорим о том, что система сделала ход. Пора и нам. В скобках обозначения). Ход делается нажатием клавиш 1,2 или 3 и Enter(как подтвердить)
-
-  (def your-move
-    (str (first (read-line)))                               ;; Нажимаем клавиши, делая ход
-  )
-
-  (if (= your-move "1") (def your-move :rock))              ;; Анализируем результаты. Такое сравнение сделано, если кто-то захочет вводить не цифры, а буквы, слова и т.д. Так изменять при таких условиях легче(мне кажется).
-  (if (= your-move "2") (def your-move :paper))             ;; Вообщем, здесь получаем наш элемент массива.
-  (if (= your-move "3") (def your-move :scissors))
-
-  (def your-move (.indexOf rps your-move))                  ;; Здесь получаем индекс нашего элемента массива(так сравниваем числа для определения победителя).
-
-  (def result (- laptop your-move))                         ;; Переменная результата
-
-  (println "Laptop -> " (rps laptop) "\r\n You -> " (rps your-move) "\r\n")    ;; Узнаем кто что поставил
-
-  (if (or (= result 1) (= result -2)) (println "Laptop is WIN."))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
-  (if (or (= result -1) (= result 2)) (println "You is WIN."))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
-  (if (= result 0) (println "Play again."))                                    ;; Если ничья, то играем заново
-  (if (= result 0) (rps-game))                                                 ;; Пока кто-то не победит
-)
 ;; ///////////////////////////////////////////////////////////////////////////////////////////////
 (defn rps2-game                                              ;; Игра Камень-Ножницы-Бумага2
-  "Rock-Paper-Scissors game with"                                ;; Это типа ее описание
+  "Get move 1st player"                                ;; Это типа ее описание
   [name2player]
 
   (def nameGame "This is Rock-Paper-Scissors game")
@@ -193,15 +152,23 @@
   )
 )
 ;;=================================
-(defn exchange-inventory
+(defn let-fly-inventory
   "Discard all"
   [winPlayer losePlayer]
 
   (def result (str winPlayer " is WINER."))
   (println result)
 
-
-
+  (def player-inventory (apply vector @*inventory*))
+  (for [thing player-inventory]
+    (dosync
+      (do
+        (move-between-refs thing
+                              *inventory*
+                              (:items @*current-room*))
+        (str "You dropped the " thing ".")
+      ))
+  )
 )
 ;;=================================
 (defn result-game
@@ -218,24 +185,20 @@
   (println *player-name* " -> " (object-game-words (.indexOf vector-object-game movePlayer2)) "\r\n")
 
   (def result (- (.indexOf vector-object-game movePlayer1) (.indexOf vector-object-game movePlayer2)))                         ;; Переменная результата
-;;   (if (or (= result 1) (= result -2)) (def result (str (thisGame :namePlayer1) " is WIN.")))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
-;;   (if (or (= result -1) (= result 2)) (def result (str *player-name* " is WIN.")))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
-  (if (or (= result 1) (= result -2)) (exchange-inventory (thisGame :namePlayer1) *player-name*))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
-  (if (or (= result -1) (= result 2)) (exchange-inventory *player-name* (thisGame :namePlayer1)))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
+  (if (or (= result 1) (= result -2)) (def result (str (thisGame :namePlayer1) " is WIN.")))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
+  (if (or (= result -1) (= result 2)) (def result (str *player-name* " is WIN.")))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
+;;   (if (or (= result 1) (= result -2)) (let-fly-inventory (thisGame :namePlayer1) *player-name*))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
+;;   (if (or (= result -1) (= result 2)) (let-fly-inventory *player-name* (thisGame :namePlayer1)))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
   (if (= result 0) (def result (str "Draw. Each remained at his own.")))                                    ;; Если ничья, то каждый остается при своем и игра заканчивается.
 
   (println result)
-
   (binding [*out* (player-streams (thisGame :namePlayer1))]
     (println (thisGame :namePlayer1) " -> " (object-game-words (.indexOf vector-object-game movePlayer1)) "\r\n")
     (println *player-name* " -> " (object-game-words (.indexOf vector-object-game movePlayer2)) "\r\n")
     (println result)
-
-    (println prompt)
   )
 
   (def isBusy?Players (apply merge (subvec isBusy?Players 0 indexThisGame) (subvec isBusy?Players (inc indexThisGame) (count isBusy?Players))))
-  (println isBusy?Players)
 )
 ;;=================================
 (defn play-
@@ -288,11 +251,11 @@
                "detect" detect
                "look" look
                "say" say
-               "tell" sayWho
+               "tell" tell
                "help" help
                "play" provPlayer
                "play-" play-
-               "ei" exchange-inventory
+               "ei" let-fly-inventory
                })
 
 ;; Command handling

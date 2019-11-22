@@ -5,7 +5,8 @@
   (:use [clojure.java.io :only [reader writer]]
         [server.socket :only [create-server]]))
 
-(defn- cleanup []
+(defn- cleanup
+  [namePlayer]
   "Drop all inventory and remove player from room and player list."
   (dosync
    (doseq [item @*inventory*]
@@ -41,6 +42,7 @@
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)
        (commute player-streams assoc *player-name* *out*)
+;;        (commute players-inventory conj *inventory*)
       )
 
       (println (look)) (print prompt) (flush)
