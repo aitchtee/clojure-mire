@@ -15,10 +15,10 @@
   "Get a description of the surrounding environs and its contents."
   []
   (str (:desc @*current-room*)
-        "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
-        (join "\r\n" (map #(str "There is " % " here.\r\n")
+        "\n\rExits: " (keys @(:exits @*current-room*)) "\n\r"
+        (join "\n\r" (map #(str "There is " % " here.\n\r")
                            @(:items @*current-room*)))
-        (join "\r\n" (map #(str "Player " % " is here.\r\n")
+        (join "\n\r" (map #(str "Player " % " is here.\n\r")
                            @(:inhabitants @*current-room*)))
   ))
 
@@ -26,16 +26,17 @@
   "\"♬ We gotta get out of this place... ♪\" Give a direction."
   [direction]
   (dosync
-   (let [target-name ((:exits @*current-room*) (keyword direction))
+    (let [target-name ((:exits @*current-room*) (keyword direction))
          target (@rooms target-name)]
-     (if target
-       (do
-         (move-between-refs *player-name*
-                            (:inhabitants @*current-room*)
-                            (:inhabitants target))
-         (ref-set *current-room* target)
-         (look))
-       "You can't go that way."))))
+      (if target
+            (do
+              (move-between-refs *player-name*
+                                (:inhabitants @*current-room*)
+                                (:inhabitants target))
+              (ref-set *current-room* target)
+              (look))
+        "You can't go that way.")
+    )))
 
 (defn grab
   "Pick something up."
@@ -62,8 +63,8 @@
 (defn inventory
   "See what you've got."
   []
-  (str "You are carrying:\n"
-       (join "\n" (seq @*inventory*))))
+  (str "You are carrying:\n\r"
+       (join "\n\r" (seq @*inventory*))))
 
 (defn detect
   "If you have the detector, you can see which room an item is in."
@@ -81,7 +82,7 @@
   (let [message (join " " words)]
     (doseq [inhabitant (disj @(:inhabitants @*current-room*) *player-name*)]
       (binding [*out* (player-streams inhabitant)]
-        (println *player-name* ": " message)
+        (println *player-name*" said: " message)
         (println prompt)))
     (str "You said " message)))
 
@@ -91,6 +92,16 @@
   (join "\n" (map #(str (key %) ": " (:doc (meta (val %))))
                       (dissoc (ns-publics 'mire.commands)
                               'execute 'commands))))
+
+(defn cleanup []
+  "Drop all inventory."
+  (dosync
+   (doseq [item @*inventory*]
+     (discard item))
+  ;  (commute player-streams dissoc *player-name*)
+  ;  (commute (:inhabitants @*current-room*)
+  ;           disj *player-name*)
+  ))
 
 ;; Command data
 
@@ -105,7 +116,8 @@
                "detect" detect
                "look" look
                "say" say
-               "help" help})
+               "help" help
+               "cleanup" cleanup})
 
 ;; Command handling
 
