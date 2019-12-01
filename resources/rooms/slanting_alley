@@ -1,0 +1,4 @@
+{
+    :desc "You are on the shoping street"
+    :exits {:south :fireplace :west :railway_station}
+}
