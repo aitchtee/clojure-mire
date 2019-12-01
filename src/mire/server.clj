@@ -1,6 +1,7 @@
 (ns mire.server
   (:use [mire.player]
-        [mire.commands :only [discard look execute changeStatus isBusy?Players]]
+        [mire.data :only [idPlayer newPlayer players-inventory]]
+        [mire.commands :only [discard look execute]]
         [mire.rooms :only [add-rooms rooms]])
   (:use [clojure.java.io :only [reader writer]]
         [server.socket :only [create-server]]))
@@ -32,17 +33,21 @@
     (print "\nWhat is your name? ") (flush)
 
     (def player-name (get-unique-player-name (read-line)) )    ;; Устанавливаю переменной player-name имя игрока, введеное в консоли
-    (def hp 100)
+
+    (newPlayer idPlayer player-name)
+
+    (def id idPlayer)
+    (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
+
     (binding [
-              *player-name* player-name
+              *player-id*  idPlayer
+              *player-name*  player-name
               *current-room* (ref (@rooms :start))
-              *inventory* (ref #{})
-              *HP* (ref hp)
+              *inventory* player-inventory
               ]
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)
        (commute player-streams assoc *player-name* *out*)
-;;        (commute players-inventory conj *inventory*)
       )
 
       (println (look)) (print prompt) (flush)
