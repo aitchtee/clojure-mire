@@ -1,0 +1,2 @@
+{:desc "You climbed into a snowy meadow."
+ :exits {:west :wardrobe}}

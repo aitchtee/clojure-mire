@@ -1,0 +1,3 @@
+{:desc "If you enter beyond this gate, then you will know all the pain that your actions brought."
+ :exits {:north :promenade :south :hell}
+ :items #{:cross}}

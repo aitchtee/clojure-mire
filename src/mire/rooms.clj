@@ -35,3 +35,4 @@
 (defn room-containslock?
   [room lock1]
   (@(:lock room) (keyword lock1)))
+

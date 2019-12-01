@@ -1,0 +1,3 @@
+{:desc "You need to atone for sins before the ascension of the sou."
+ :exits {:west :promenade}
+ :items #{:cross :turtle}}
