@@ -64,6 +64,13 @@
   ([port dir]
      (add-rooms dir)
      (defonce server (create-server (Integer. port) mire-handle-client))
-     (println "Launching Mire server on port" port))
+     (println "Launching Mire server on port" port)
+     (for [x (range 100)]
+       (do
+         (println x)
+         (Thread/sleep 2000)
+       )
+     )
+  )
   ([port] (-main port "resources/rooms"))
   ([] (-main 3333)))
