@@ -88,30 +88,61 @@
   [thing]
   (dosync
    (if (room-contains? @*current-room* thing)
-     (do (move-between-refs (keyword thing)
+     (if (= thing "money")
+      (do
+        (alter *money* inc)
+        (alter (:items @*current-room*) disj (keyword thing))
+        (str "You picked up the money.")
+      )
+      (do
+        (move-between-refs (keyword thing)
                             (:items @*current-room*)
                             *inventory*)
-         (str "You picked up the " thing "."))
-     (str "There isn't any " thing " here."))))
+        (str "You picked up the " thing ".")
+      )
+     )
+     (str "There isn't any " thing " here.")
+   )
+  )
+)
 
 (defn discard
   "Put something down that you're carrying."
   [thing]
   (if (= #{(keyword thing)} @( :lock @*current-room*))                              ;;Если вещь это ключ от замка, то ты
-   (str "Here you cannot throw "(seq  @( :lock @*current-room*)))                         ;; то ты ее не выбросишь:)
-  (dosync
-   (if (carrying? thing)
-     (do (move-between-refs (keyword thing)
-                            *inventory*
-                            (:items @*current-room*))
-         (str "You dropped the " thing "."))
-     (str "You're not carrying a " thing ".")))))
+    (str "Here you cannot throw "(seq  @( :lock @*current-room*)))                         ;; то ты ее не выбросишь:)
+    (dosync
+      (if (= thing "money")
+          (if (> @*money* 0)
+            (do (alter *money* dec)
+              (alter (:items @*current-room*) conj (keyword thing))
+              (str "You dropped the money.")
+            )
+            (str "No money!")
+          )
+          (if (carrying? thing)
+              (do (move-between-refs (keyword thing)
+                                 *inventory*
+                                 (:items @*current-room*))
+                  (str "You dropped the " thing "."))
+              (str "You're not carrying a " thing ".")
+          )
+    )
+  )
+)
+  )
 
 (defn inventory
   "See what you've got."
   []
   (str "You are carrying:\r\n"
        (join "\r\n" (seq @*inventory*))))
+
+(defn seemoney
+  "See your money"
+  []
+  (str (join "\r\n" (map #(str "Money is " % " .\r\n") [(str @*money*)])))
+)
 
 (defn detect
   "If you have the detector, you can see which room an item is in."
@@ -313,6 +344,7 @@
                "play" provPlayer
                "play-" play-
                "ei" exchange-inventory
+               "seemoney" seemoney
                })
 
 ;; Command handling

@@ -32,11 +32,13 @@
 
     (def player-name (get-unique-player-name (read-line)) )    ;; Устанавливаю переменной player-name имя игрока, введеное в консоли
     (def hp 100)
+    (def Money 0)
     (binding [
               *player-name* player-name
               *current-room* (ref (@rooms :start))
               *inventory* (ref #{})
               *HP* (ref hp)
+              *money* (ref Money)
               ]
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)

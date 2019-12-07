@@ -4,6 +4,7 @@
 (def ^:dynamic *inventory*)
 (def ^:dynamic *player-name*)
 (def ^:dynamic *HP*)
+(def ^:dynamic *money*)
 ;; (def ^:dynamic *isHeBusy?*)
 
 
