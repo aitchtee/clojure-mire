@@ -11,7 +11,9 @@
             :exits (ref (:exits room))
             :items (ref (or (:items room) #{}))
             :lock (ref (or (:lock room) #{}))
-            :inhabitants (ref #{})}})))
+            :inhabitants (ref #{})
+            :maniacs (ref #{})}
+            })))
 
 (defn load-rooms
   "Given a dir, return a map with an entry corresponding to each file

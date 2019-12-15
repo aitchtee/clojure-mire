@@ -1,7 +1,8 @@
 (ns mire.commands
   (:use [mire.rooms :only [rooms room-contains?]]
         [mire.player]
-        [mire.maniac])
+        [mire.maniac]
+        [mire.emojiList])
   (:use [clojure.string :only [join]]))
 
 (defn- move-between-refs
@@ -16,7 +17,6 @@
 
 
 
-
 ;; Command functions
 
 (defn look
@@ -26,6 +26,8 @@
        "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
        (join "\r\n" (map #(str "There is " % " here.\r\n")
                            @(:items @*current-room*)))
+       "Maniacs " (join "\r\n" (map #(str % " here.\r\n")
+                           @(:maniacs @*current-room*)))
   )
 )
 
@@ -44,6 +46,7 @@
                                 (:inhabitants @*current-room*)
                                 (:inhabitants target))
              (ref-set *current-room* target)
+             (maniac-fight)
              (look))
         "You can't go that way."))
     (if target                                                            ;; Иначе преходим в комнату
@@ -105,6 +108,23 @@
         (println prompt)))
     (str "You said " message)))
 
+
+;(defn say_loud
+	;"Say something for everyone"
+	;[& words]
+	;(let [message (join " " words)]
+				;(println ( for [ room @rooms] ( into #{} @( :inhabitant ( :name room )) ) ))
+ ;   (doseq [inhabitant (disj ( for [ room @rooms] ( into #{} @( :inhabitant ( :name room )) ) ) *player-name*)]
+ ;     (	
+ ;     	binding [*out* (player-streams inhabitant)]
+ ;       (println message)
+ ;       (println prompt)
+ ;     )
+ ;    )
+ ;   (str "You said " message))
+	;)
+
+
 (defn help
   "Show available commands and what they do."
   []
@@ -112,6 +132,50 @@
                       (dissoc (ns-publics 'mire.commands)
                               'execute 'commands))))
 
+;; Emoji functions
+
+(defn- pretty_keyword
+	"Print keyword without ':'"
+	[keyword]
+	(subs (str keyword) 1)
+)
+
+(defn curr_emoji
+					"get your current emoji"
+					[]
+					(str @*current-emoji*)
+)
+
+(defn list_emoji
+				"List available emotions"
+				[]
+				 (
+				 		str "Available emotions:\r\n" (
+				 					join "\r\n" (
+				 						 map 
+				 							pretty_keyword 
+				 							@*emoji-available*
+				 									
+				 				)
+				 		)
+     )
+)
+
+(defn set_emoji
+	"Set your current emoji to new value"
+	[emoji_in]
+	(dosync	
+				(if (@*emoji-available* (keyword emoji_in) )
+						( do
+							(ref-set *current-emoji*  (keyword emoji_in) )
+							(str "your current emoji is" (pretty_keyword @*current-emoji*) ) 
+						)
+						(
+									str "You haven't such emoji"
+						)
+				)
+	)
+)
 ;; Command data
 (def commands {"move" move,
                "north" (fn [] (move :north)),
@@ -125,7 +189,13 @@
                "look" look
                "say" say
                "help" help
-               "gen-maniac" gen-maniac})
+               "gen-maniac" gen-maniac
+               "curr_emoji" curr_emoji
+               "list_emoji" list_emoji
+               "set_emoji" set_emoji
+               "say_loud" say_loud
+               ;"kill-maniac" kill-maniac
+               })
 
 ;; Command handling
 

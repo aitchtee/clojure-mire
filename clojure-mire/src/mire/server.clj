@@ -1,5 +1,6 @@
 (ns mire.server
   (:use [mire.player]
+  						[mire.emojiList]
         [mire.commands :only [discard look execute]]
         [mire.rooms :only [add-rooms rooms]])
   (:use [clojure.java.io :only [reader writer]]
@@ -31,7 +32,9 @@
     (print "\nWhat is your name? ") (flush)
     (binding [*player-name* (get-unique-player-name (read-line))
               *current-room* (ref (@rooms :start))
-              *inventory* (ref #{})]
+              *inventory* (ref #{})
+              *current-emoji* (ref :No_emotion)
+              *emoji-available* (ref #{:no_emotion :sad})]
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)
        (commute player-streams assoc *player-name* *out*))
