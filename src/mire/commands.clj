@@ -193,7 +193,7 @@
                "curr_emoji" curr_emoji
                "list_emoji" list_emoji
                "set_emoji" set_emoji
-               "say_loud" say_loud
+               ;"say_loud" say_loud
                ;"kill-maniac" kill-maniac
                })
 
