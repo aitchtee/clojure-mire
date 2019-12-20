@@ -1,6 +1,7 @@
 (ns mire.server
   (:use [mire.player]
         [mire.data :only [idPlayer newPlayer players-inventory]]
+  						[mire.emojiList]
         [mire.commands :only [discard look execute]]
         [mire.rooms :only [add-rooms rooms]])
   (:use [clojure.java.io :only [reader writer]]
@@ -44,7 +45,8 @@
               *player-name*  player-name
               *current-room* (ref (@rooms :start))
               *inventory* player-inventory
-              ]
+              *current-emoji* (ref :No_emotion)
+              *emoji-available* (ref #{:no_emotion :sad})]
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)
        (commute player-streams assoc *player-name* *out*))
