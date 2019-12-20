@@ -1,0 +1,3 @@
+{:desc "You are in a cramped closet."
+ :exits {:south :start :east :wardrobe :north :roof}
+ :items #{:kek}}
