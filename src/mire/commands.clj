@@ -1,16 +1,17 @@
 (ns mire.commands
   (:use [mire.rooms :only [rooms room-contains?]]
-        [mire.player])
+        [mire.player]
+        [mire.data :only [players-inventory]])
   (:use [clojure.string :only [join]]))
 
-(def isBusy?Players [])
+(def PlayingPlayers [])
 
 (def object-game (hash-set "1" "2" "3"))
 
 (defn changeStatus
   [namePlayer1 namePlayer2 movePlayer1]
 
-  (def isBusy?Players (conj isBusy?Players {:namePlayer1 namePlayer1, :namePlayer2 namePlayer2, :movePlayer1 movePlayer1}))
+  (def PlayingPlayers (conj PlayingPlayers {:namePlayer1 namePlayer1, :namePlayer2 namePlayer2, :movePlayer1 movePlayer1}))
 )
 
 (defn- move-between-refs
@@ -19,38 +20,22 @@
   (alter from disj obj)
   (alter to conj obj))
 
-(defn- move-delete
-  [obj from]
-  (alter from disj obj))
-
-
-
-
 ;; Command functions
 
 (defn look
   "Get a description of the surrounding environs and its contents."
   []
-
+  (println "You : " {:id *player-id*, :name *player-name*})
   (str (:desc @*current-room*)
        "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
        (str (join "\r\n" (map #(str "There is " % " here.\r\n")
                            @(:items @*current-room*)))
-            (join "\r\n" (map #(str "Player is " % " here.\r\n")
-                           @(:inhabitants @*current-room*)))
-
-;;             (doseq [namePlayer1 (map :namePlayer1 isBusy?Players)
-;;                       namePlayer2 (map :namePlayer2 isBusy?Players)]
-;;                   (join "\r\n" (str "Playing : " namePlayer1 " - " namePlayer2))
-;;             )
-
-;;             (join "\r\n" (map #(str "HP is " % " .\r\n") [(str @*HP*)]))
-;;             (join "\r\n" (str "HP is " @*HP* " .\r\n"))
-;;             "HP is " @*HP* " .\r\n"
-;;             "isHeBusy? " @*isHeBusy?* " .\r\n"
+            (join "\r\n" (map #(str "Player is " {:id (% :id), :name (% :name)} " here.\r\n")
+                           (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
+                              ))
        )
 
-       (doseq [namePlayers isBusy?Players]
+       (doseq [namePlayers PlayingPlayers]
          (println "Playing : " (namePlayers :namePlayer1) " - " (namePlayers :namePlayer2))
        )
   )
@@ -87,6 +72,7 @@
   "Pick something up."
   [thing]
   (dosync
+;;    (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
    (if (room-contains? @*current-room* thing)
      (do (move-between-refs (keyword thing)
                             (:items @*current-room*)
@@ -100,9 +86,10 @@
   (if (= #{(keyword thing)} @( :lock @*current-room*))                              ;;Если вещь это ключ от замка, то ты
    (str "Here you cannot throw "(seq  @( :lock @*current-room*)))                         ;; то ты ее не выбросишь:)
   (dosync
-   (if (carrying? thing)
+;;     (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
+    (if (carrying? thing)
      (do (move-between-refs (keyword thing)
-                            *inventory*
+                              *inventory*
                             (:items @*current-room*))
          (str "You dropped the " thing "."))
      (str "You're not carrying a " thing ".")))))
@@ -116,6 +103,7 @@
 (defn detect
   "If you have the detector, you can see which room an item is in."
   [item]
+;;   (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
   (if (@*inventory* :detector)
     (if-let [room (first (filter #((:items %) (keyword item))
                                  (vals @rooms)))]
@@ -133,7 +121,7 @@
         (println prompt)))
     (str "You said " message)))
 
-(defn sayWho
+(defn tell
   "Say something out loud so everyone in the room can hear."
   [namePlayer]
 
@@ -153,43 +141,9 @@
   (join "\r\n" (map #(str (key %) ": " (:doc (meta (val %))))
                       (dissoc (ns-publics 'mire.commands)
                               'execute 'commands))))
-;; =============================================================================================================
-(defn rps-game                                              ;; Игра Камень-Ножницы-Бумага
-  "Rock-Paper-Scissors game."                                ;; Это типа ее описание
-  []                                                        ;; Аргументов нет(А что передавать можно то?)
-  (println "This is Rock-Paper-Scissors game")              ;; Говорим, что это за игра
-
-  (changeStatus *player-name* "Laptop")
-
-  (def rps [:rock :paper :scissors])                        ;; Объявляем вектор из 3х элементов игры
-  (def laptop                                               ;; Здесь хранится ход ноута(системы, или бота, или другого игрока)
-    (.indexOf rps (rand-nth rps))                           ;; получаем индекс(с 0) рандомного элемента массива элементов игры(система ходит рандомно), т.е как бы система делает ход
-  )
-
-  (println "Laptop is ready. Your move(1 - rock ; 2 - paper ; 3 - scissors) : ")  ;; Говорим о том, что система сделала ход. Пора и нам. В скобках обозначения). Ход делается нажатием клавиш 1,2 или 3 и Enter(как подтвердить)
-
-  (def your-move
-    (str (first (read-line)))                               ;; Нажимаем клавиши, делая ход
-  )
-
-  (if (= your-move "1") (def your-move :rock))              ;; Анализируем результаты. Такое сравнение сделано, если кто-то захочет вводить не цифры, а буквы, слова и т.д. Так изменять при таких условиях легче(мне кажется).
-  (if (= your-move "2") (def your-move :paper))             ;; Вообщем, здесь получаем наш элемент массива.
-  (if (= your-move "3") (def your-move :scissors))
-
-  (def your-move (.indexOf rps your-move))                  ;; Здесь получаем индекс нашего элемента массива(так сравниваем числа для определения победителя).
-
-  (def result (- laptop your-move))                         ;; Переменная результата
-
-  (println "Laptop -> " (rps laptop) "\r\n You -> " (rps your-move) "\r\n")    ;; Узнаем кто что поставил
-
-  (if (or (= result 1) (= result -2)) (println "Laptop is WIN."))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
-  (if (or (= result -1) (= result 2)) (println "You is WIN."))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
-  (if (= result 0) (println "Play again."))                                    ;; Если ничья, то играем заново
-  (if (= result 0) (rps-game))                                                 ;; Пока кто-то не победит
-)
 ;; ///////////////////////////////////////////////////////////////////////////////////////////////
 (defn rps2-game                                              ;; Игра Камень-Ножницы-Бумага2
-  "Rock-Paper-Scissors game with"                                ;; Это типа ее описание
+  "Get move 1st player"                                ;; Это типа ее описание
   [name2player]
 
   (def nameGame "This is Rock-Paper-Scissors game")
@@ -208,20 +162,29 @@
 
   (binding [*out* (player-streams name2player)]
     (println "Player " *player-name* " wants play game with you!")
-    (println "You need play game. Format(N = 1(rock) or 2(paper) or 3(scissors)) : play N !!!")
+    (println "You need play game. Format(N = 1(rock) or 2(paper) or 3(scissors)) : play- N !!!")
     (println prompt)
   )
 )
 ;;=================================
-(defn exchange-inventory
+(defn let-fly-inventory
   "Discard all"
-  [winPlayer losePlayer]
-
-  (def result (str winPlayer " is WINER."))
-  (println result)
-
-
-
+  [losePlayer]
+  (def player-inventory ((first (filter #(= (% :name) losePlayer) players-inventory)) :inventory))
+  (dosync
+    (doseq [thing @player-inventory]
+        (move-between-refs thing
+                           player-inventory
+                           (:items @*current-room*))
+    )
+    (do
+      (move-between-refs *player-name*
+                      (:inhabitants @*current-room*)
+                      (:inhabitants (@rooms :start)))
+      (ref-set *current-room* (@rooms :start))
+    )
+  )
+  (println "Yes")
 )
 ;;=================================
 (defn result-game
@@ -230,8 +193,8 @@
 
   (def vector-object-game (apply vector object-game))
   (def object-game-words ["rock" "paper" "scissors"])
-  (def indexThisGame (.indexOf (map :namePlayer2 isBusy?Players) *player-name*))
-  (def thisGame (isBusy?Players indexThisGame))
+  (def indexThisGame (.indexOf (map :namePlayer2 PlayingPlayers) *player-name*))
+  (def thisGame (PlayingPlayers indexThisGame))
   (def movePlayer1 (thisGame :movePlayer1))
 
   (println (thisGame :namePlayer1) " -> " (object-game-words (.indexOf vector-object-game movePlayer1)) "\r\n")
@@ -240,22 +203,28 @@
   (def result (- (.indexOf vector-object-game movePlayer1) (.indexOf vector-object-game movePlayer2)))                         ;; Переменная результата
 ;;   (if (or (= result 1) (= result -2)) (def result (str (thisGame :namePlayer1) " is WIN.")))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
 ;;   (if (or (= result -1) (= result 2)) (def result (str *player-name* " is WIN.")))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
-  (if (or (= result 1) (= result -2)) (exchange-inventory (thisGame :namePlayer1) *player-name*))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
-  (if (or (= result -1) (= result 2)) (exchange-inventory *player-name* (thisGame :namePlayer1)))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
+  (if (or (= result 1) (= result -2))
+    (do
+      (def result (str (thisGame :namePlayer1) " is WIN."))
+      (let-fly-inventory *player-name*)
+    )
+  )              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
+  (if (or (= result -1) (= result 2))
+    (do
+      (def result (str *player-name* " is WIN."))
+      (let-fly-inventory (thisGame :namePlayer1))
+    )
+  )                 ;; Аналогично, просто меняем знаки, и тогда мы победили
   (if (= result 0) (def result (str "Draw. Each remained at his own.")))                                    ;; Если ничья, то каждый остается при своем и игра заканчивается.
 
   (println result)
-
   (binding [*out* (player-streams (thisGame :namePlayer1))]
     (println (thisGame :namePlayer1) " -> " (object-game-words (.indexOf vector-object-game movePlayer1)) "\r\n")
     (println *player-name* " -> " (object-game-words (.indexOf vector-object-game movePlayer2)) "\r\n")
     (println result)
-
-    (println prompt)
   )
 
-  (def isBusy?Players (apply merge (subvec isBusy?Players 0 indexThisGame) (subvec isBusy?Players (inc indexThisGame) (count isBusy?Players))))
-  (println isBusy?Players)
+  (def PlayingPlayers (apply merge (subvec PlayingPlayers 0 indexThisGame) (subvec PlayingPlayers (inc indexThisGame) (count PlayingPlayers))))
 )
 ;;=================================
 (defn play-
@@ -264,7 +233,7 @@
 
   (def move2 moveplayer)
 
-  (if (contains? (apply hash-set (map :namePlayer1 isBusy?Players)) *player-name*)
+  (if (contains? (apply hash-set (map :namePlayer1 PlayingPlayers)) *player-name*)
     (println "You cannot ahange your choise")
 
     (let []
@@ -280,18 +249,27 @@
 ;;=================================
 (defn provPlayer
   "Play test"
-  [name2player]
+  [id2player]
+
+  (def id2playerLong (Long/parseLong id2player))
 
   (def mapPlayers (apply hash-set
-                         (apply merge (map :namePlayer1 isBusy?Players) (map :namePlayer2 isBusy?Players))
+                         (apply merge (map :namePlayer1 PlayingPlayers) (map :namePlayer2 PlayingPlayers))
                   )
   )
 
-  (if (or (not (contains? @(:inhabitants @*current-room*) name2player))
-          (contains? mapPlayers name2player)
-          (= name2player *player-name*))
-    (println "The player is not this room or he is busy or he not exist or you input your name. Try later.\r\n")
-    (rps2-game name2player)
+
+  (try
+    (do
+      (def name2player ((first (filter #(= (% :id) id2playerLong) players-inventory)) :name))
+      (if (or (not (contains? @(:inhabitants @*current-room*) name2player))
+              (contains? mapPlayers name2player)
+              (= name2player *player-name*))
+        (println "The player is not this room or he is busy or he not exist or you input your name. Try later.\r\n")
+        (rps2-game name2player)
+      )
+    )
+    (catch NullPointerException e (println "The player is not exist"))
   )
 )
 ;;==================================
@@ -308,11 +286,10 @@
                "detect" detect
                "look" look
                "say" say
-               "tell" sayWho
+               "tell" tell
                "help" help
                "play" provPlayer
                "play-" play-
-               "ei" exchange-inventory
                })
 
 ;; Command handling
@@ -321,7 +298,7 @@
   "Execute a command that is passed to us."
   [input]
   (try (let [[command & args] (.split input " +")]
-          (def mapPlayers (apply hash-set (apply merge (map :namePlayer1 isBusy?Players) (map :namePlayer2 isBusy?Players))))
+          (def mapPlayers (apply hash-set (apply merge (map :namePlayer1 PlayingPlayers) (map :namePlayer2 PlayingPlayers))))
           (if (and (contains? mapPlayers *player-name*) (not= command "play-"))
               (println "You need ending the game.")
               (do

@@ -3,13 +3,17 @@
 (def ^:dynamic *current-room*)
 (def ^:dynamic *inventory*)
 (def ^:dynamic *player-name*)
-(def ^:dynamic *HP*)
-;; (def ^:dynamic *isHeBusy?*)
+(def ^:dynamic *player-id*)
 
 
 (def prompt "> ")
 (def player-streams (ref {}))
 
 (defn carrying?
-  [thing]
-  (some #{(keyword thing)} @*inventory*))
+  [thing
+;;    player-inventory
+   ]
+
+;;   (some #{(keyword thing)} @player-inventory)
+  (some #{(keyword thing)} @*inventory*)
+  )
