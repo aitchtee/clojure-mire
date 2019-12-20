@@ -32,8 +32,7 @@
        "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
        (str (join "\r\n" (map #(str "There is " % " here.\r\n")
                            @(:items @*current-room*)))
-       "Maniacs " (join "\r\n" (map #(str % " here.\r\n")
-                           @(:maniacs @*current-room*)))
+       
             (join "\r\n" (map #(str "Player is " {:id (% :id), :name (% :name)} " here.\r\n")
                            (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
                               ))
@@ -42,6 +41,9 @@
        (doseq [namePlayers PlayingPlayers]
          (println "Playing : " (namePlayers :namePlayer1) " - " (namePlayers :namePlayer2))
        )
+
+       "Maniacs " (join "\r\n" (map #(str % " here.\r\n")
+                           @(:maniacs @*current-room*)))
   )
 )
 
@@ -60,6 +62,8 @@
                                 (:inhabitants @*current-room*)
                                 (:inhabitants target))
              (ref-set *current-room* target)
+
+             (maniac-fight)
              (look))
         "You can't go that way."))
     (if target                                                            ;; Иначе преходим в комнату
@@ -68,6 +72,7 @@
                             (:inhabitants @*current-room*)
                             (:inhabitants target))
          (ref-set *current-room* target)
+         (maniac-fight)
          (look))
     "You can't go that way.")))))
 

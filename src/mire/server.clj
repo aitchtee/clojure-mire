@@ -45,7 +45,7 @@
               *player-name*  player-name
               *current-room* (ref (@rooms :start))
               *inventory* player-inventory
-              *current-emoji* (ref :No_emotion)
+              *current-emoji* (ref :no_emotion)
               *emoji-available* (ref #{:no_emotion :sad})]
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)

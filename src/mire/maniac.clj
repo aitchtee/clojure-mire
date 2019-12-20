@@ -34,10 +34,13 @@
 		[]
 		;; Get maniac in this room
 		(def current-maniacs-ref (  :maniacs ((:name @*current-room* ) @rooms )  ) )
-		;(println @current-maniacs-ref)
-		(if (@*current-emoji* @current-maniacs-ref)   ;; If here is maniac with same emoji  
-						(println "Maniac don't kill you there" )
-						(println "YOU ARE DIED") 
+		;;(println (str (:name @*current-room*)) )
+		;;(println @current-maniacs-ref)
+		( if (not= @current-maniacs-ref #{})    										;; If some maniac in room 
+			(if (@*current-emoji* @current-maniacs-ref)   ;; If here is maniac with same emoji  
+							(println "Maniac don't kill you there" )
+							(println "YOU ARE DIED") 
+			)
 		)
 )
 
@@ -46,12 +49,12 @@
   (get-temp-rooms)
   (def target-room (rand-nth temp-rooms))
   (def target-emotion (rand-nth (vec emoji) ) )
-  ;;(println target-emotion)
-  ;;(println target-room)
+  (println target-emotion)
+  (println target-room)
   ;;(println (target-room @rooms))
 
   (dosync 
-  			(alter ( :maniacs (target-room @rooms) ) conj  target-emotion 	)   ;; write maniac into room
+  			(alter ( :maniacs (:hallway @rooms) ) conj  :no_emotion 	)   ;; write maniac into room
   			;(say_loud "maniac is appear") 
 		)
 
