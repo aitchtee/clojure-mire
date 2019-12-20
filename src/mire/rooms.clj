@@ -17,10 +17,16 @@
   []
   (def dict
     (for [room (vals (deref rooms))]
-      (apply merge {(keyword (room :lock)) (room :name)})
+      (apply merge  {(keyword (room :name))  @(room :lock)})
   ))
-  (println dict)
+  (def dic dict)
+  (for [keke (vals dic)]
+    ((def kek (keke :lock))
+     (println kek)
+      (conj kek "#{}")))
+  (println dic)
 )
+
 
 
 (defn load-rooms

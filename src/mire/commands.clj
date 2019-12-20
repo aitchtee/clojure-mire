@@ -32,7 +32,6 @@
    (let [target-name ((:exits @*current-room*) (keyword direction))      ;;получить все выходы в исходной комнате и обозначить путь
          target (@rooms target-name)]                                    ;; получение комнаты из списка
     ;; (println kek)
-     (println (fn [] testikitty))
      (if (not= @( :lock target) #{(some @( :lock target) @*inventory*)}) ;; Если замок не равен предменту из инвентаря то
         (if (not= @( :lock target) #{})                                  ;;     (Если замок не равен пустане то
            ( str "LOCK!!! Find an " ( seq @( :lock target)) " to pass " )       ;;        выводим сообщение )
