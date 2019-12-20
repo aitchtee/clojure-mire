@@ -3,6 +3,7 @@
         [mire.player]
         [mire.data :only [players-inventory]]
         [mire.maniac]
+        [mire.utilities]
         [mire.emojiList])
   (:use [clojure.string :only [join]]))
 
@@ -15,12 +16,6 @@
 
   (def PlayingPlayers (conj PlayingPlayers {:namePlayer1 namePlayer1, :namePlayer2 namePlayer2, :movePlayer1 movePlayer1}))
 )
-
-(defn- move-between-refs
-  "Move one instance of obj between from and to. Must call in a transaction."
-  [obj from to]
-  (alter from disj obj)
-  (alter to conj obj))
 
 ;; Command functions
 

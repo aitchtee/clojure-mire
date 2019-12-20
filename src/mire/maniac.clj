@@ -1,7 +1,9 @@
 (ns mire.maniac
   (:use [mire.rooms :only [rooms]])
   (:use [mire.emojiList]
-  						[mire.player])
+  						[mire.player]
+  						[mire.utilities]
+  						[mire.data])
 )  
 
 (def maniacs (ref {}))
@@ -28,6 +30,26 @@
   (def temp-rooms filtered_res ) ;(for [x  res]  ( get x 1) )
 )
 
+
+(defn kill-player
+  "Discard all"
+  []
+  (def player-invent ((first (filter #(= (% :name) *player-name*) players-inventory)) :inventory))
+  (dosync
+    (doseq [thing @player-invent]
+        (move-between-refs thing
+                           player-invent
+                           (:items @*current-room*))
+    )
+    (do
+      (move-between-refs *player-name*
+                      (:inhabitants @*current-room*)
+                      (:inhabitants (@rooms :start)))
+      (ref-set *current-room* (@rooms :start))
+    )
+  )
+)
+
 ;;Maniac functions
 (defn maniac-fight
 		"Procedure of fight with maniac. Do it in transaction."
@@ -39,7 +61,10 @@
 		( if (not= @current-maniacs-ref #{})    										;; If some maniac in room 
 			(if (@*current-emoji* @current-maniacs-ref)   ;; If here is maniac with same emoji  
 							(println "Maniac don't kill you there" )
-							(println "YOU ARE DIED") 
+							( do 
+										(kill-player)
+										(println "YOU ARE DIED\nStart from the begining")
+							) 
 			)
 		)
 )
@@ -49,12 +74,12 @@
   (get-temp-rooms)
   (def target-room (rand-nth temp-rooms))
   (def target-emotion (rand-nth (vec emoji) ) )
-  (println target-emotion)
-  (println target-room)
+  ;;(println target-emotion)
+  ;;(println target-room)
   ;;(println (target-room @rooms))
 
   (dosync 
-  			(alter ( :maniacs (:hallway @rooms) ) conj  :no_emotion 	)   ;; write maniac into room
+  			(alter ( :maniacs (target-room @rooms) ) conj  target-emotion 	)   ;; write maniac into room
   			;(say_loud "maniac is appear") 
 		)
 
