@@ -44,7 +44,6 @@
 (defn move
   "\"♬ We gotta get out of this place... ♪\" Give a direction."
   [direction]
-
   (dosync
    (let [target-name ((:exits @*current-room*) (keyword direction))      ;;получить все выходы в исходной комнате и обозначить путь
          target (@rooms target-name)]                                    ;; получение комнаты из списка
@@ -72,7 +71,6 @@
   "Pick something up."
   [thing]
   (dosync
-;;    (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
    (if (room-contains? @*current-room* thing)
      (do (move-between-refs (keyword thing)
                             (:items @*current-room*)
@@ -86,8 +84,7 @@
   (if (= #{(keyword thing)} @( :lock @*current-room*))                              ;;Если вещь это ключ от замка, то ты
    (str "Here you cannot throw "(seq  @( :lock @*current-room*)))                         ;; то ты ее не выбросишь:)
   (dosync
-;;     (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
-    (if (carrying? thing)
+   (if (carrying? thing)
      (do (move-between-refs (keyword thing)
                               *inventory*
                             (:items @*current-room*))
@@ -103,7 +100,6 @@
 (defn detect
   "If you have the detector, you can see which room an item is in."
   [item]
-;;   (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
   (if (@*inventory* :detector)
     (if-let [room (first (filter #((:items %) (keyword item))
                                  (vals @rooms)))]
@@ -275,11 +271,11 @@
 ;;==================================
 ;; Command data
 
-(def commands {"move" move
+(def commands {"move" move,
                "north" (fn [] (move :north)),
                "south" (fn [] (move :south)),
-               "east"  (fn [] (move :east))
-               "west"  (fn [] (move :west))
+               "east" (fn [] (move :east)),
+               "west" (fn [] (move :west)),
                "grab" grab
                "discard" discard
                "inventory" inventory

@@ -1,0 +1,3 @@
+{:desc "Satan bowed to you."
+ :exits {:north :in}
+ :items #{:skull}}

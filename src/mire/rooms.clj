@@ -13,6 +13,16 @@
             :lock (ref (or (:lock room) #{}))
             :inhabitants (ref #{})}})))
 
+(defn testikitty
+  []
+  (def dict
+    (for [room (vals (deref rooms))]
+      (apply merge {(keyword (room :lock)) (room :name)})
+  ))
+  (println dict)
+)
+
+
 (defn load-rooms
   "Given a dir, return a map with an entry corresponding to each file
   in it. Files should be maps containing room data."
@@ -35,3 +45,4 @@
 (defn room-containslock?
   [room lock1]
   (@(:lock room) (keyword lock1)))
+

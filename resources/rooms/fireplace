@@ -1,0 +1,4 @@
+{
+    :desc "You can warm yourself here."
+    :exits {:east :start :north :slanting_alley}
+}
