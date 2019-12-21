@@ -1,4 +1,0 @@
-{
-    :desc "Stunning views of the whole city is in front of you"
-    :exits {:south :closet}
-}

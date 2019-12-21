@@ -11,18 +11,7 @@
             :exits (ref (:exits room))
             :items (ref (or (:items room) #{}))
             :lock (ref (or (:lock room) #{}))
-            :inhabitants (ref #{})
-            :maniacs (ref #{})}})))
-
-(defn testikitty
-  []
-  (def dict
-    (for [room (vals (deref rooms))]
-      (apply merge {(keyword (room :lock)) (room :name)})
-  ))
-  (println dict)
-)
-
+            :inhabitants (ref #{})}})))
 
 (defn load-rooms
   "Given a dir, return a map with an entry corresponding to each file
@@ -47,3 +36,6 @@
   [room lock1]
   (@(:lock room) (keyword lock1)))
 
+(defn room-contains-gold?
+  [room thing]
+  (@(:gold room) (keyword thing)))

@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Leiningen-Project-GroupId: leiningen
+Built-By: phil
+Leiningen-Project-Version: 2.9.1
+Leiningen-Project-ArtifactId: leiningen
+Created-By: Leiningen 2.9.1
+Build-Jdk: 1.8.0_181
+Main-Class: clojure.main
+

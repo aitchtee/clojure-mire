@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.tcrawley</groupId>
+  <artifactId>dynapath</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0.0</version>
+  <name>dynapath</name>
+  <description>An abstraction for modifiable/readable class loaders.</description>
+  <url>https://github.com/tobias/dynapath</url>
+  <licenses>
+    <license>
+      <name>Eclipse Public License</name>
+      <url>http://www.eclipse.org/legal/epl-v10.html</url>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git://github.com/tobias/dynapath.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/tobias/dynapath.git</developerConnection>
+    <tag>9ead4b8a6dc7868a86fe7985d41d94e7dc2bd645
+</tag>
+    <url>https://github.com/tobias/dynapath</url>
+  </scm>
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>resources</directory>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>resources</directory>
+      </testResource>
+    </testResources>
+    <directory>target</directory>
+    <outputDirectory>target/classes</outputDirectory>
+    <plugins/>
+  </build>
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>clojars</id>
+      <url>https://clojars.org/repo/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+  </repositories>
+  <dependencyManagement>
+    <dependencies/>
+  </dependencyManagement>
+  <dependencies/>
+  <developers>
+    <developer>
+      <name>Toby Crawley</name>
+      <url>https://github.com/tobias/</url>
+      <email>toby@tcrawley.org</email>
+      <timezone>-5</timezone>
+    </developer>
+  </developers>
+</project>

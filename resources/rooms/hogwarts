@@ -1,4 +1,0 @@
-{
-    :desc "Hogwarts School of Witchcraft and Wizardry"
-    :exits {:east :platform934}
-}

@@ -1,4 +1,0 @@
-{
-    :desc "Be ready to board the Hogwarts Express!"
-    :exits {:north :railway_station :west :hogwarts}
-}

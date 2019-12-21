@@ -1,2 +1,0 @@
-{:desc "It's dark and smells of things."
- :exits {:west :closet :east :narnia}}

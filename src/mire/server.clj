@@ -1,14 +1,11 @@
 (ns mire.server
   (:use [mire.player]
-        [mire.data :only [idPlayer newPlayer players-inventory]]
-  						[mire.emojiList]
-        [mire.commands :only [discard look execute]]
+        [mire.commands :only [discard look execute changeStatus isBusy?Players]]
         [mire.rooms :only [add-rooms rooms]])
   (:use [clojure.java.io :only [reader writer]]
         [server.socket :only [create-server]]))
 
-(defn- cleanup
-  [namePlayer]
+(defn- cleanup []
   "Drop all inventory and remove player from room and player list."
   (dosync
    (doseq [item @*inventory*]
@@ -34,22 +31,19 @@
     (print "\nWhat is your name? ") (flush)
 
     (def player-name (get-unique-player-name (read-line)) )    ;; Устанавливаю переменной player-name имя игрока, введеное в консоли
-
-    (newPlayer idPlayer player-name)
-
-    (def id idPlayer)
-    (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
-
+    (def hp 100)
+    (def Money 0)
     (binding [
-              *player-id*  idPlayer
-              *player-name*  player-name
+              *player-name* player-name
               *current-room* (ref (@rooms :start))
-              *inventory* player-inventory
-              *current-emoji* (ref :no_emotion)
-              *emoji-available* (ref #{:no_emotion :sad})]
+              *inventory* (ref #{})
+              *HP* (ref hp)
+              *money* (ref Money)
+              ]
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)
-       (commute player-streams assoc *player-name* *out*))
+       (commute player-streams assoc *player-name* *out*)
+      )
 
       (println (look)) (print prompt) (flush)
 
@@ -65,13 +59,6 @@
   ([port dir]
      (add-rooms dir)
      (defonce server (create-server (Integer. port) mire-handle-client))
-     (println "Launching Mire server on port" port)
-     (for [x (range 100)]
-       (do
-         (println x)
-         (Thread/sleep 2000)
-       )
-     )
-  )
+     (println "Launching Mire server on port" port))
   ([port] (-main port "resources/rooms"))
   ([] (-main 3333)))
