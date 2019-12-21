@@ -19,3 +19,5 @@
 ;;   (some #{(keyword thing)} @player-inventory)
   (some #{(keyword thing)} @*inventory*)
   )
+
+(def telnet-connection (ref #{}))

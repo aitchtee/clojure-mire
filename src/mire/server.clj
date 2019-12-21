@@ -4,8 +4,23 @@
   						[mire.emojiList]
         [mire.commands :only [discard look execute]]
         [mire.rooms :only [add-rooms rooms]])
-  (:use [clojure.java.io :only [reader writer]]
-        [server.socket :only [create-server]]))
+  (:use [clojure.java.io ];:only [reader writer]]
+        [server.socket :only [create-server]]
+        ;[clj-tcp.client]
+        
+			)       
+  (:require
+    [immutant.web             :as web]
+    [immutant.web.async       :as async]
+    [immutant.web.middleware  :as web-middleware]
+    [compojure.route          :as route]
+    [environ.core             :refer (env)]
+    [compojure.core           :refer (ANY GET defroutes)]
+    [ring.util.response       :refer (response redirect content-type)]
+    )
+  (:gen-class)
+ 	
+ )
 
 (defn- cleanup
   [namePlayer]
@@ -36,7 +51,7 @@
     (def player-name (get-unique-player-name (read-line)) )    ;; Устанавливаю переменной player-name имя игрока, введеное в консоли
 
     (newPlayer idPlayer player-name)
-
+    ( let [*in* System/out] (println player-name) )
     (def id idPlayer)
     (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
 
@@ -61,17 +76,69 @@
                (recur (read-line))))
            (finally (cleanup))))))
 
-(defn -main
-  ([port dir]
-     (add-rooms dir)
-     (defonce server (create-server (Integer. port) mire-handle-client))
-     (println "Launching Mire server on port" port)
-     (for [x (range 100)]
-       (do
-         (println x)
-         (Thread/sleep 2000)
-       )
-     )
+
+;==server=functions
+; WEB SOCKET CONNECTION HANDLER
+(def websocket-callbacks
+  "WebSocket callback functions"
+  {:on-open   (fn [channel] ;; When socket connection opens
+  	(do
+    (async/send! channel "Ready to reverse your messages!")
+  ;  (def my_writer (  clojure.java.io.in\))
+   ; (def my_reader ( make-reader  ))
+    ;(def my_reader ( clojure.java.io/reader "dev/null"))
+    ;(mire-handle-client  my_writer my_reader  )
+
+   ) 
   )
-  ([port] (-main port "resources/rooms"))
-  ([] (-main 3333)))
+
+  :on-close   (fn [channel {:keys [code reason]}]
+    (println "close code:" code "reason:" reason))
+  :on-message (fn [ch m] 
+ 			
+  				(async/send! ch "Ready to reverse your messages!")
+
+  )  
+    ;(async/send! ch (apply str (reverse m)))
+
+ ;   )
+})
+
+
+(defroutes routes
+  (GET "/" {c :context} (redirect (str c "/index.html")))
+  (route/resources "/"))
+
+;=================
+
+(defn -main
+  ([& {:as args}]
+  		(	let [ port 3333 
+  										dir "resources/rooms"]
+		     (add-rooms dir)
+		     (defonce server (create-server (Integer. port) mire-handle-client))
+		     (println "Launching Mire server on port" port)
+		   )
+		     (web/run
+		    			(-> routes
+		      			(web-middleware/wrap-session {:timeout 20})
+		     			 ;; wrap the handler with websocket support
+		      			;; websocket requests will go to the callbacks, ring requests to the handler
+		      		(web-middleware/wrap-websocket websocket-callbacks))
+		      		(let [ host "0.0.0.0"
+		      									port "5000"	]
+		      			(merge {"host" host, "port" port } args) 
+		      		)
+		     )		
+		     
+		     (for [x (range 100)]
+		       (do
+		         (println x)
+		         (Thread/sleep 2000)
+		       )
+		     )
+		   
+  )
+  ;([port] (-main port "resources/rooms"))
+  ;([] (-main 3333))
+  )
