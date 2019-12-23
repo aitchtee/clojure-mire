@@ -105,10 +105,6 @@
         fun mire-handle-client
         ] 
   	(do
-    
-						  										
-						  																
-						  													
 						                  (dosync (commute connections conj  {channel pip_writer} )  )
 						                
 						                 (.start (Thread. (fn[] ( ;(fun in out)
@@ -127,14 +123,20 @@
    
   
 
-  :on-close   (fn [channel {:keys [code reason]}]
+  :on-close   (fn [ch {:keys [code reason]}]
     (
     		do
     		  		(println "close code:" code "reason:" reason)
-    						; got connection
+    						
     						(dosync
-    									(println "ja")
-    									;(close-socket  (@connections channel ) )
+    									
+    									(if (@connections ch) 
+    												(let [writer (@connections ch)]
+    												(.close writer))
+    												(println "ERROR on-close")	
+    									)
+
+    									
     							)
     		)
 
