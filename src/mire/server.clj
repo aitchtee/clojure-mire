@@ -55,7 +55,7 @@
 
     ;; We have to nest this in another binding call instead of using
     ;; the one above so *in* and *out* will be bound to the socket
-    (print "\nWhat is your name? ") (flush)
+    (print "\nWhat is your name? ") (flush) (.flush *out* )
 
     (def player-name (get-unique-player-name (read-line)) )    ;; Устанавливаю переменной player-name имя игрока, введеное в консоли
 
@@ -82,6 +82,7 @@
                (println (execute input))
                (.flush *err*)
                (print prompt) (flush)
+               (.flush *out* )
                (recur (read-line))))
            (finally (cleanup))))))
 
@@ -89,30 +90,66 @@
 ;==server=functions
 ; WEB SOCKET CONNECTION HANDLER
 
-
+(defn send-messeges-to-clients
+			[]
+			"send messeges to clients"
+			(dosync
+					;(println @connections)
+					(doseq [elem  @connections]
+							( do
+									;(println elem)
+									(let  [reader (last(last elem))
+																channel (first elem)
+																outp (ref '() )
+																]
+									( if (not= (.available reader) 0 ) 
+									( do
+																			(while (not= (.available reader) 0)
+																					(dosync
+																							( commute outp conj  (.read reader))
+																					)
+																			
+																			
+																		)
+																			
+																			(def out (apply str (map char (reverse (into [] @outp) ) )))
+																			(async/send! channel out)
+																			
+												)
+									)
+							)
+					)
+			)
+			;(recur)
+			)
+)
 
 (def websocket-callbacks
   "WebSocket callback functions"
   {:on-open   (fn [channel] ;; When socket connection opens
   	( 
   			dosync
+  			;(Thread/sleep 1000)
 
   	(let [
   	 				;str (String. "Bob\nsouth"
   	 				ins  (PipedInputStream. 	 )
   	 				pip_writer (PipedOutputStream. ins) 	
-        outs  System/err  ;(.getOutputStream s)
+        pip_reader (PipedInputStream.)
+        outs  (PipedOutputStream. pip_reader )  ;(.getOutputStream s)
         fun mire-handle-client
         ] 
   	(do
-						                  (dosync (commute connections conj  {channel pip_writer} )  )
+						                  
 						                
 						                 (.start (Thread. (fn[] ( ;(fun in out)
 																				     let [ in ins
 																				     							out outs](
 																				     							mire-handle-client in out)
 																				     ))))
+						                 (dosync (commute connections conj  {channel [ pip_writer  pip_reader]} )  )
 						                 	(println "New web connection")
+						                 	(send-messeges-to-clients)
 
    		)
   	)
@@ -131,8 +168,10 @@
     						(dosync
     									
     									(if (@connections ch) 
-    												(let [writer (@connections ch)]
-    												(.close writer))
+    												(let [writer (first (@connections ch))
+    																		reader (last (@connections ch))]
+    												(.close writer)
+    												(.close reader))
     												(println "ERROR on-close")	
     									)
 
@@ -145,11 +184,13 @@
  			
   			(dosync	
   					 (if (@connections ch)
-  					 (let [pip_writer  (@connections ch )
+  					 (let [pip_writer  ( first (@connections ch ) )
             ]
 										(do 
 						  				(. pip_writer write (.getBytes (str m "\n")))
 						  				(. pip_writer flush)
+
+						  				(send-messeges-to-clients)
 										)           
 
         )
@@ -165,6 +206,7 @@
 (defroutes routes
   (GET "/" {c :context} (redirect (str c "/index.html")))
   (route/resources "/"))
+
 
 ;=================
 
@@ -187,7 +229,8 @@
 		      									port "5000"	]
 		      			(merge {"host" host, "port" port } args) 
 		      		)
-		     )		
+		     )
+		     ;(.start(Thread. send-messeges-to-clients ))		
 		     
 		     (for [x (range 100)]
 		       (do
