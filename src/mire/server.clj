@@ -6,6 +6,7 @@
         [mire.rooms :only [add-rooms rooms]])
   (:use [clojure.java.io ];:only [reader writer]]
         [server.socket :only [create-server]]
+        [clojure.core.async :only [thread-call]]
         ;[clj-tcp.client]
         
 			) 						
@@ -100,39 +101,22 @@
   	 				;str (String. "Bob\nsouth"
   	 				ins  (PipedInputStream. 	 )
   	 				pip_writer (PipedOutputStream. ins) 	
-        outs  System/out  ;(.getOutputStream s)
+        outs  System/err  ;(.getOutputStream s)
         fun mire-handle-client
         ] 
   	(do
-    ;(async/send! channel "Ready to reverse your messages!")
-  		; Create socket
-
-  	 
-  	 ;(println "connection")
-  	 ; call function
-  	
-  		
-						  					;(do
-						  																; bind streams
-						  																;(println "connection")
-						  																(println pip_writer)
-						  																	(. pip_writer write (.getBytes (str "Bob\ngrab keys\n") ))
-						  																	;(. pip_writer flush)
-						  																( async/send! channel 	"ysss")
-						  																(println (ancestors fun) )
-						                  (dosync (commute connections conj { channel pip_writer })  )
-						                  (try
-						                   (.start (Thread. (fun ins outs) ) )
-						                   (async/send! channel "thread is started")
-						                   ;(future (fun ins outs))
-						                  (catch IOException e))
-						                  (.close ins)
-						                  (.close outs)
-						            ;      (close-socket s)
-						            ;     	(dosync (dissoc connections channel))
-						                 	(println "disconection")
-
-						        ;)
+    
+						  										
+						  																
+						  													
+						                  (dosync (commute connections conj  {channel pip_writer} )  )
+						                
+						                 (.start (Thread. (fn[] ( ;(fun in out)
+																				     let [ in ins
+																				     							out outs](
+																				     							mire-handle-client in out)
+																				     ))))
+						                 	(println "New web connection")
 
    		)
   	)
@@ -158,23 +142,21 @@
   :on-message (fn [ch m] 
  			
   			(dosync	
-  				(println "message")
-  					;(async/send! ch "Ready to reverse your messages!")
-  					 ;(let [pip_writer  (@connections ch )
-        ;    ]
-										;(do 
-												;(println pip_writer)
-												;(. pip_writer write (.getBytes (str m) ))
-						  			;	(. pip_writer flush)
-										;)           
+  					 (if (@connections ch)
+  					 (let [pip_writer  (@connections ch )
+            ]
+										(do 
+						  				(. pip_writer write (.getBytes (str m "\n")))
+						  				(. pip_writer flush)
+										)           
 
-        ;)    
+        )
+        (println "error sending to client")
+        )    
   				
   			)
   )  
-    ;(async/send! ch (apply str (reverse m)))
-
- ;   )
+    
 })
 
 

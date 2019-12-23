@@ -20,4 +20,4 @@
   (some #{(keyword thing)} @*inventory*)
   )
 
-(def connections (ref #{}))
+(def connections (ref {}))
