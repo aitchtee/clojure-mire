@@ -8,7 +8,13 @@
         [server.socket :only [create-server]]
         ;[clj-tcp.client]
         
-			)       
+			) 						
+
+	(:import 
+											(java.lang String Thread)
+											(java.net InetAddress ServerSocket  Socket SocketException)
+           (java.io InputStreamReader OutputStream  PrintWriter StringReader StringWriter IOException PipedInputStream PipedOutputStream)
+           )  
   (:require
     [immutant.web             :as web]
     [immutant.web.async       :as async]
@@ -21,6 +27,8 @@
   (:gen-class)
  	
  )
+
+(def port (int 3333))
 
 (defn- cleanup
   [namePlayer]
@@ -79,25 +87,90 @@
 
 ;==server=functions
 ; WEB SOCKET CONNECTION HANDLER
+
+
+
 (def websocket-callbacks
   "WebSocket callback functions"
   {:on-open   (fn [channel] ;; When socket connection opens
-  	(do
-    (async/send! channel "Ready to reverse your messages!")
-  ;  (def my_writer (  clojure.java.io.in\))
-   ; (def my_reader ( make-reader  ))
-    ;(def my_reader ( clojure.java.io/reader "dev/null"))
-    ;(mire-handle-client  my_writer my_reader  )
+  	( 
+  			dosync
 
-   ) 
-  )
+  	(let [
+  	 				;str (String. "Bob\nsouth"
+  	 				ins  (PipedInputStream. 	 )
+  	 				pip_writer (PipedOutputStream. ins) 	
+        outs  System/out  ;(.getOutputStream s)
+        fun mire-handle-client
+        ] 
+  	(do
+    ;(async/send! channel "Ready to reverse your messages!")
+  		; Create socket
+
+  	 
+  	 ;(println "connection")
+  	 ; call function
+  	
+  		
+						  					;(do
+						  																; bind streams
+						  																;(println "connection")
+						  																(println pip_writer)
+						  																	(. pip_writer write (.getBytes (str "Bob\ngrab keys\n") ))
+						  																	;(. pip_writer flush)
+						  																( async/send! channel 	"ysss")
+						  																(println (ancestors fun) )
+						                  (dosync (commute connections conj { channel pip_writer })  )
+						                  (try
+						                   (.start (Thread. (fun ins outs) ) )
+						                   (async/send! channel "thread is started")
+						                   ;(future (fun ins outs))
+						                  (catch IOException e))
+						                  (.close ins)
+						                  (.close outs)
+						            ;      (close-socket s)
+						            ;     	(dosync (dissoc connections channel))
+						                 	(println "disconection")
+
+						        ;)
+
+   		)
+  	)
+  )	
+ )		
+
+
+   
+  
 
   :on-close   (fn [channel {:keys [code reason]}]
-    (println "close code:" code "reason:" reason))
+    (
+    		do
+    		  		(println "close code:" code "reason:" reason)
+    						; got connection
+    						(dosync
+    									(println "ja")
+    									;(close-socket  (@connections channel ) )
+    							)
+    		)
+
+    )
   :on-message (fn [ch m] 
  			
-  				(async/send! ch "Ready to reverse your messages!")
+  			(dosync	
+  				(println "message")
+  					;(async/send! ch "Ready to reverse your messages!")
+  					 ;(let [pip_writer  (@connections ch )
+        ;    ]
+										;(do 
+												;(println pip_writer)
+												;(. pip_writer write (.getBytes (str m) ))
+						  			;	(. pip_writer flush)
+										;)           
 
+        ;)    
+  				
+  			)
   )  
     ;(async/send! ch (apply str (reverse m)))
 
@@ -118,6 +191,7 @@
 		     (add-rooms dir)
 		     (defonce server (create-server (Integer. port) mire-handle-client))
 		     (println "Launching Mire server on port" port)
+		    
 		   )
 		     (web/run
 		    			(-> routes

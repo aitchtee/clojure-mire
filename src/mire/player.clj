@@ -20,4 +20,4 @@
   (some #{(keyword thing)} @*inventory*)
   )
 
-(def telnet-connection (ref #{}))
+(def connections (ref #{}))
