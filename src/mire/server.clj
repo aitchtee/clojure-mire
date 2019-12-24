@@ -106,20 +106,12 @@
 
 )
 (defn send-messeges-to-client
-[client]
-()
-
-)
-(defn send-messeges-to-clients
-			[]
-			"send messeges to clients"
-			(dosync
-					(println "start to send messages to clients")
-					(doseq [elem  @connections]
-							( do
-									(.start(.Thread (fn []
-									(let  [reader (last(last elem))
-																channel (first elem)
+[channel reader ]
+(
+						(.start(Thread. (fn [] (
+								do
+									(let  [;reader (last(last conn))
+																;channel (first conn)
 																outp (ref '() )
 																]
 									(loop []
@@ -132,14 +124,28 @@
 																			(Thread/sleep 10) (recur) )
 										)	
 																			(async/send! channel ( chars-to-string @outp))
-																			
-									) (Thread/sleep 10) (recur) )
 
-							)))		
+																			(println "im here" )
+									) (Thread/sleep 10) (recur) )
+							)
+
+							))
+)
+
+)
+(defn send-messeges-to-clients
+			[]
+			"send messeges to clients"
+			(dosync
+					(println "start to send messages to clients")
+					(doseq [elem  @connections]
+							( do
+								(println elem)
+							)		
 							
 					)
 			)
-			;(recur)
+			(recur)
 )
 
 (def websocket-callbacks
@@ -167,6 +173,8 @@
 																				     ))))
 						                 (dosync (commute connections conj  {channel [ pip_writer  pip_reader]} )  )
 						                 	(println "New web connection")
+						                 	; Start to send messages to client
+						                 	(send-messeges-to-client channel pip_reader)
 						                 	;(send-messeges-to-clients)
 
    		)
@@ -204,14 +212,12 @@
   					 (if (@connections ch)
   					 (let [pip_writer  ( first (@connections ch ) )
             ]
-          ;  (if (not= m "reload")
 										(do 
 						  				(. pip_writer write (.getBytes (str m "\n")))
 						  				(. pip_writer flush)
 						  			;(send-messeges-to-clients)
 										)
-										;(send-messeges-to-clients)    
-									;)	       
+       
 
         )
         (println "error sending to client")
@@ -250,7 +256,7 @@
 		      			(merge {"host" host, "port" port } args) 
 		      		)
 		     )
-		     (.start(Thread. send-messeges-to-clients ))		
+		     ;(.start(Thread. send-messeges-to-clients ))		
 		     
 		     (for [x (range 100)]
 		       (do
