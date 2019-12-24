@@ -55,7 +55,7 @@
 
     ;; We have to nest this in another binding call instead of using
     ;; the one above so *in* and *out* will be bound to the socket
-    (print "\nWhat is your name? ") (flush) (.flush *out* )
+    (print "\nWhat is your name? ") (print prompt) (flush) (.flush *out* )
 
     (def player-name (get-unique-player-name (read-line)) )    ;; Устанавливаю переменной player-name имя игрока, введеное в консоли
 
@@ -80,6 +80,7 @@
       (try (loop [input (read-line)]
              (when input
                (println (execute input))
+               ;(binding [*out* System/out] (println "im here"))
                (.flush *err*)
                (print prompt) (flush)
                (.flush *out* )
@@ -89,39 +90,56 @@
 
 ;==server=functions
 ; WEB SOCKET CONNECTION HANDLER
+(defn chars-to-string
+[chars]
+"translate chars vector to String"
+(apply str (map char (reverse (into [] chars) )))
+)
 
+(defn complete-message
+	[msg]
+	"true if messege is complete"
+	(do
+	(= (last (butlast msg) ) (first prompt))
+	)
+	
+
+)
+(defn send-messeges-to-client
+[client]
+()
+
+)
 (defn send-messeges-to-clients
 			[]
 			"send messeges to clients"
 			(dosync
-					;(println @connections)
+					(println "start to send messages to clients")
 					(doseq [elem  @connections]
 							( do
-									;(println elem)
+									(.start(.Thread (fn []
 									(let  [reader (last(last elem))
 																channel (first elem)
 																outp (ref '() )
 																]
-									( if (not= (.available reader) 0 ) 
-									( do
+									(loop []
 																			(while (not= (.available reader) 0)
 																					(dosync
 																							( commute outp conj  (.read reader))
 																					)
+																	 	)
+																			(when (not (complete-message  (chars-to-string @outp) ) )
+																			(Thread/sleep 10) (recur) )
+										)	
+																			(async/send! channel ( chars-to-string @outp))
 																			
-																			
-																		)
-																			
-																			(def out (apply str (map char (reverse (into [] @outp) ) )))
-																			(async/send! channel out)
-																			
-												)
-									)
-							)
+									) (Thread/sleep 10) (recur) )
+
+							)))		
+							
 					)
 			)
 			;(recur)
-			)
 )
 
 (def websocket-callbacks
@@ -149,7 +167,7 @@
 																				     ))))
 						                 (dosync (commute connections conj  {channel [ pip_writer  pip_reader]} )  )
 						                 	(println "New web connection")
-						                 	(send-messeges-to-clients)
+						                 	;(send-messeges-to-clients)
 
    		)
   	)
@@ -186,12 +204,14 @@
   					 (if (@connections ch)
   					 (let [pip_writer  ( first (@connections ch ) )
             ]
+          ;  (if (not= m "reload")
 										(do 
 						  				(. pip_writer write (.getBytes (str m "\n")))
 						  				(. pip_writer flush)
-
-						  				(send-messeges-to-clients)
-										)           
+						  			;(send-messeges-to-clients)
+										)
+										;(send-messeges-to-clients)    
+									;)	       
 
         )
         (println "error sending to client")
@@ -230,7 +250,7 @@
 		      			(merge {"host" host, "port" port } args) 
 		      		)
 		     )
-		     ;(.start(Thread. send-messeges-to-clients ))		
+		     (.start(Thread. send-messeges-to-clients ))		
 		     
 		     (for [x (range 100)]
 		       (do
