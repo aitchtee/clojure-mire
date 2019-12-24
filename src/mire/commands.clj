@@ -117,8 +117,8 @@
   (let [message (join " " words)]
     (doseq [inhabitant (disj @(:inhabitants @*current-room*) *player-name*)]
       (binding [*out* (player-streams inhabitant)]
-        (println *player-name* " : " message)
-        (println prompt)))
+        (print *player-name* " : " message " " prompt)
+        ))
     (str "You said " message)))
 
 (defn tell
@@ -130,7 +130,7 @@
 
       (binding [*out* (player-streams namePlayer)]
         (println "Message from " *player-name* " : " message)
-        (println prompt)
+        (print prompt)
         )
     (str "You message was send player " namePlayer)
 )

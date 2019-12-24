@@ -108,7 +108,7 @@
 (defn send-messeges-to-client
 [channel reader ]
 (
-						(.start(Thread. (fn [] (
+	
 								do
 									(let  [;reader (last(last conn))
 																;channel (first conn)
@@ -121,15 +121,15 @@
 																					)
 																	 	)
 																			(when (not (complete-message  (chars-to-string @outp) ) )
-																			(Thread/sleep 10) (recur) )
+																			(Thread/sleep 10) (println "->" (chars-to-string @outp) "<-") (recur) )
 										)	
 																			(async/send! channel ( chars-to-string @outp))
 
-																			(println "im here" )
-									) (Thread/sleep 10) (recur) )
-							)
+																			
+									) (Thread/sleep 10)
+							
 
-							))
+							
 )
 
 )
@@ -211,14 +211,20 @@
   			(dosync	
   					 (if (@connections ch)
   					 (let [pip_writer  ( first (@connections ch ) )
+  					 					reader (last (@connections ch))
             ]
+         (if (not= m "refresh")   
 										(do 
 						  				(. pip_writer write (.getBytes (str m "\n")))
 						  				(. pip_writer flush)
-						  			;(send-messeges-to-clients)
+						  			(send-messeges-to-client ch reader)
 										)
-       
+											(do
 
+       						(.start (Thread. ( fn [] (send-messeges-to-client ch reader))))
+													;(println "im here")
+											)
+										)
         )
         (println "error sending to client")
         )    
