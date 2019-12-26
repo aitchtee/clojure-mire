@@ -13,6 +13,8 @@ window.onload = function() {
 
   var socket;
 
+  let lastSentCommand;
+  
   function output(style, text){
   messages.innerHTML += "<br/><span class='" + style + "'>" + text + "</span>";
   }
@@ -38,10 +40,11 @@ window.onload = function() {
         };
 
         socket.onmessage = function(event) {
-            var message = event.data;
-            // messages.innerHTML = "<p> ulzfuk </br> ejlfsdkch</p>";
-            output("received", "<<< " + message);
+          
+            var message = event.data;            
             
+            output("received", "<<< " + message);
+            updateUI(message);
         };
 
         socket.onclose = function(event) {
@@ -68,6 +71,7 @@ window.onload = function() {
       var text = document.getElementById("input").value;
       socket.send(text);
       input.value = '';
+      
       output("sent", ">>> " + text);
     };
     
@@ -111,7 +115,7 @@ window.onload = function() {
       }
       
       if (e.code === "ArrowUp") {
-        moveToGivenDirection("north")
+        moveToGivenDirection("north");
       }
       if (e.code === "ArrowLeft") {
         moveToGivenDirection("west")
@@ -125,15 +129,17 @@ window.onload = function() {
       
     });
     
+    function updateUI(data) {
+      
+      let transformedData = data.substring(0,data.length-3); 
+
+      try {
+          let currentState = JSON.parse(transformedData);
+          console.log(currentState.exits[0])
+      } catch (e) {
+        console.log('cant parse it');
+      }
+      
+    }
+    
 };
-
-// Key Pressed Listeners
-//window.onkeyup = function (e) {
-//  let key = e.keyCode ? e.keyCode : e.which;
-  
-
-//  if (key == 13) {
-//    alert(key);
-//    sendCommand();
-//  }
-//};
