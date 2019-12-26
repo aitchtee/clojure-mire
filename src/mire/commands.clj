@@ -74,13 +74,20 @@
 (defn grab
   "Pick something up."
   [thing]
-  (dosync
+
+ (if (> (count @*inventory*) 0) 
+	  				(str "Too many stuff. Throw something!!!")
+ (dosync
    (if (room-contains? @*current-room* thing)
      (do (move-between-refs (keyword thing)
                             (:items @*current-room*)
                             *inventory*)
          (str "You picked up the " thing "."))
-     (str "There isn't any " thing " here."))))
+     (str "There isn't any " thing " here.")
+  	 )
+  	)
+ 	)
+ )
 
 (defn discard
   "Put something down that you're carrying."
