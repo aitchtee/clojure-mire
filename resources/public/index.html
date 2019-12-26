@@ -52,11 +52,14 @@
       color: white;
     }
     
-    .controlButtons: after {
-      align-items: right;
-      content: "";
-      clear: both;
-      display: table;
+    .controlButtons:  {
+/*      align-items: right;*/
+/*      content: "";*/
+/*      clear: both;*/
+/*      display: table;*/
+
+/*      display: block;*/
+/*      margin: 10% auto;*/
     }
     
     .controlButtons button {
@@ -64,7 +67,7 @@
       height: 5%;
       padding: 8px 24px;
       
-      margin: 3%;
+/*      margin: %;*/
       display: table;
       
       background-color: #4a4a4a;
@@ -77,8 +80,9 @@
       text-align: center;
       
       cursor: pointer;
+      float: right;
       
-      float: left;
+      margin: 0px 10px;
       
     }
     
@@ -107,8 +111,8 @@
     </div>
     
     <div class="controlButtons">
-      <button type="button" id="open">Start the game!</button>
-      <button type="button" id="send">Send</button>
+      <button type="button" id="open">Start the game</button>
+<!--       <button type="button" id="send">Send</button> -->
       <button type="button" id="close">Give up!</button>
       <br><br><br>
     </div>
