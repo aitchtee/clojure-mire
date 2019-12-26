@@ -114,6 +114,12 @@ window.onload = function() {
         sendCommand();
       }
       
+      // focus to console
+      if (e.code === "Space") {
+        input.focus();
+      }
+      
+      // Moving
       if (e.code === "ArrowUp") {
         moveToGivenDirection("north");
       }
@@ -131,15 +137,45 @@ window.onload = function() {
     
     function updateUI(data) {
       
+      // Exclude " >" at the end !
       let transformedData = data.substring(0,data.length-3); 
-
-      try {
-          let currentState = JSON.parse(transformedData);
-          console.log(currentState.exits[0])
-      } catch (e) {
-        console.log('cant parse it');
+      
+      let currentState = parseJsonSafely(transformedData);
+      if (currentState == null) {
+        console.log("got null");
+        return;
+      }
+      
+      // UPDATING
+      let navigationButtons = [northButton, westButton, eastButton, southButton];
+      for (i in navigationButtons)
+        navigationButtons[i].style.color = "#4a4a4a";
+        
+      
+      let exits = currentState.exits;
+      
+      for (index in exits) {
+        switch (exits[index]) {
+            case "north": northButton.style.color = "white"; break;
+            case "west": westButton.style.color = "white"; break;
+            case "east": eastButton.style.color = "white"; break;
+            case "south": southButton.style.color = "white"; break;
+        }
       }
       
     }
     
 };
+
+function parseJsonSafely(json) {
+  // game state 
+  var parsedObject;
+  try {
+      parsedObject = JSON.parse(json);
+      console.log(parsedObject.exits[0])
+  } catch (e) {
+    console.log('cant parse it');
+  }
+  return parsedObject;
+}
+
