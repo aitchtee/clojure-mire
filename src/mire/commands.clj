@@ -4,12 +4,31 @@
         [mire.data :only [players-inventory]]
         [mire.maniac]
         [mire.utilities]
-        [mire.emojiList])
-  (:use [clojure.string :only [join]]))
+        [mire.emojiList]
+        [clojure.java.io])
+  (:use [clojure.string :only [join]])
+
+  (:require
+  		[clojure.data.json 						 :as json]
+    [immutant.web             :as web]
+    [immutant.web.async       :as async]
+    [immutant.web.middleware  :as web-middleware]
+    [compojure.route          :as route]
+    [environ.core             :refer (env)]
+    [compojure.core           :refer (ANY GET defroutes)]
+    [ring.util.response       :refer (response redirect content-type)]
+  )
+  (:import 
+		(java.lang String Thread)
+		(java.net InetAddress ServerSocket  Socket SocketException)
+    (java.io InputStreamReader OutputStream  PrintWriter StringReader StringWriter IOException PipedInputStream PipedOutputStream)
+
+  )
+)
 
 (def PlayingPlayers [])
 
-(def object-game (hash-set "1" "2" "3"))
+(def object-game (vector "rock" "paper" "scissors"))
 
 (defn changeStatus
   [namePlayer1 namePlayer2 movePlayer1]
@@ -22,24 +41,50 @@
 (defn look
   "Get a description of the surrounding environs and its contents."
   []
-  (println "You : " {:id *player-id*, :name *player-name*})
-  (str (:desc @*current-room*)
-       "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
-       (str (join "\r\n" (map #(str "There is " % " here.\r\n")
-                           @(:items @*current-room*)))
+  ( if (= *player-channel* 0)
+  	( do
+		  (println "You : " {:id *player-id*, :name *player-name*})
+		  (str (:desc @*current-room*)
+		       "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
+		       (str (join "\r\n" (map #(str "There is " % " here.\r\n")
+		                           @(:items @*current-room*)))
+		       
+		            (join "\r\n" (map #(str "Player is " {:id (% :id), :name (% :name)} " here.\r\n")
+		                           (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
+		                              ))
+		       )
 
-            (join "\r\n" (map #(str "Player is " {:id (% :id), :name (% :name)} " here.\r\n")
-                           (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
-                              ))
-            (join (str "GOLD " @(:gold @*current-room*) " here.\r\n"))
-       )
+		       (doseq [namePlayers PlayingPlayers]
+		         (println "Playing : " (namePlayers :namePlayer1) " - " (namePlayers :namePlayer2))
+		       )
 
-       (doseq [namePlayers PlayingPlayers]
-         (println "Playing : " (namePlayers :namePlayer1) " - " (namePlayers :namePlayer2))
-       )
+		       "Maniacs " (join "\r\n" (map #(str % " here.\r\n")
+		                           @(:maniacs @*current-room*)))
 
-       "Maniacs " (join "\r\n" (map #(str % " here.\r\n")
-                           @(:maniacs @*current-room*)))
+	  	)
+		 )
+		 (json/write-str 
+		 				;println 
+		 							(conj {} [:name (:name @*current-room*)] 
+		 																					[:desc (:desc @*current-room*)] 
+		 																					[:exits (keys @(:exits @*current-room*))]
+		 																					[:inhabitants  ( for
+		 																									[x 
+		 																									(filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
+		 																									]
+		 																									(conj {} [ :id (:id x) ] [:name (:name x)])
+
+		 																									)
+		 																					]
+		 																					;[:maniacs @(:maniacs @*current-room*) ]
+		 																					[:playing   (doseq [namePlayers PlayingPlayers]
+		         														( conj {} 
+		         																				[:namePlayer1 (namePlayers :namePlayer1)] 
+		         																				[:namePlayer2 (namePlayers :namePlayer2)])
+		       														)]
+		 																					[:items @(:items @*current-room*)]
+		 												)  
+  	)
   )
 )
 
@@ -207,24 +252,20 @@
   [& words]
   (let [message (join " " words)]
     (doseq [inhabitant (disj @(:inhabitants @*current-room*) *player-name*)]
-      (binding [*out* (player-streams inhabitant)]
-        (println *player-name* " : " message)
-        (println prompt)))
+    	(def other-player-channel (connected_name_channel inhabitant))
+    	(if (= other-player-channel 0)
+	      (binding [*out* (player-streams inhabitant)]
+	        (println *player-name* " : " message " " prompt)
+	      )
+	      (if (@connected_name_channel inhabitant)
+	      	(do
+				  	(async/send! (connected_name_channel inhabitant) (str *player-name* " : " message " " prompt))
+				  	(flush)
+	      	)
+	      )
+    	)
+    )
     (str "You said " message)))
-
-(defn tell
-  "Say something out loud so everyone in the room can hear."
-  [namePlayer]
-
-  (println "Input text message for player " namePlayer " : ")
-    (def message (read-line))
-
-      (binding [*out* (player-streams namePlayer)]
-        (println "Message from " *player-name* " : " message)
-        (println prompt)
-        )
-    (str "You message was send player " namePlayer)
-)
 
 (defn help
   "Show available commands and what they do."
@@ -235,27 +276,42 @@
 ;; ///////////////////////////////////////////////////////////////////////////////////////////////
 (defn rps2-game                                              ;; Игра Камень-Ножницы-Бумага2
   "Get move 1st player"                                ;; Это типа ее описание
-  [name2player]
+  [name2player your-move]
 
   (def nameGame "This is Rock-Paper-Scissors game")
-  (println nameGame)                                        ;; Говорим, что это за игра
+  (print nameGame) (print prompt) (flush) (.flush *out* )                                     ;; Говорим, что это за игра
 
-  (println "Your move(1 - rock ; 2 - paper ; 3 - scissors) : ")
-  (def moveplayer (read-line))
+  ; (println "Your move(1 - rock ; 2 - paper ; 3 - scissors) : ") (print prompt) (flush) (.flush *out* )
+  ; (def moveplayer (read-line))
+  ; (def moveplayer -1)
 
-  (while (not (contains? object-game moveplayer))
-    (do
-      (println "No correct move!")
-      (def moveplayer (read-line))
-  ))
+  (def moveplayer-object your-move)
 
-  (changeStatus *player-name* name2player moveplayer)
-
-  (binding [*out* (player-streams name2player)]
-    (println "Player " *player-name* " wants play game with you!")
-    (println "You need play game. Format(N = 1(rock) or 2(paper) or 3(scissors)) : play- N !!!")
-    (println prompt)
+  (if (not (contains? (apply hash-set object-game) moveplayer-object))
+	  (while (not (contains? (apply hash-set object-game) moveplayer-object))
+	    (do
+	      (print "No correct move!") (print prompt) (flush) (.flush *out* )
+	      (def moveplayer-object (read-line))
+	      (println moveplayer-object)
+	  	)
+	  )  	
   )
+
+  (changeStatus *player-name* name2player moveplayer-object)
+
+;=========================
+		(if (= (@connected_name_channel name2player) 0)
+	  (binding [*out* (player-streams name2player)]
+	    (println "Player " *player-name* " wants play game with you!") (print prompt) (flush) (.flush *out* )
+	    (println "You need play game. Format(N = rock or paper or scissors) : play- N !!!")
+	    (print prompt)
+	  )
+	  (do
+	  	(async/send! (@connected_name_channel name2player) (str "Player " *player-name* " wants play game with you!"))
+	  	(async/send! (@connected_name_channel name2player) "You need play game. Format(N = rock or paper or scissors) : play- N !!!")
+	  )
+		)
+;-------------------------
 )
 ;;=================================
 (defn let-fly-inventory
@@ -280,18 +336,17 @@
 ;;=================================
 (defn result-game
   "End Game"
-  [movePlayer2]
+  [movePl2]
 
-  (def vector-object-game (apply vector object-game))
-  (def object-game-words ["rock" "paper" "scissors"])
   (def indexThisGame (.indexOf (map :namePlayer2 PlayingPlayers) *player-name*))
   (def thisGame (PlayingPlayers indexThisGame))
-  (def movePlayer1 (thisGame :movePlayer1))
+  (def movePlayer1 (+ (.indexOf object-game (thisGame :movePlayer1)) 1))
+  (def movePlayer2 (+ (.indexOf object-game movePl2) 1))
 
-  (println (thisGame :namePlayer1) " -> " (object-game-words (.indexOf vector-object-game movePlayer1)) "\r\n")
-  (println *player-name* " -> " (object-game-words (.indexOf vector-object-game movePlayer2)) "\r\n")
+  (println (thisGame :namePlayer1) " -> " (thisGame :movePlayer1) "\r\n")
+  (println *player-name* " -> " movePl2 "\r\n")
 
-  (def result (- (.indexOf vector-object-game movePlayer1) (.indexOf vector-object-game movePlayer2)))                         ;; Переменная результата
+  (def result (- movePlayer1 movePlayer2))                         ;; Переменная результата
 ;;   (if (or (= result 1) (= result -2)) (def result (str (thisGame :namePlayer1) " is WIN.")))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
 ;;   (if (or (= result -1) (= result 2)) (def result (str *player-name* " is WIN.")))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
   (if (or (= result 1) (= result -2))
@@ -309,10 +364,18 @@
   (if (= result 0) (def result (str "Draw. Each remained at his own.")))                                    ;; Если ничья, то каждый остается при своем и игра заканчивается.
 
   (println result)
-  (binding [*out* (player-streams (thisGame :namePlayer1))]
-    (println (thisGame :namePlayer1) " -> " (object-game-words (.indexOf vector-object-game movePlayer1)) "\r\n")
-    (println *player-name* " -> " (object-game-words (.indexOf vector-object-game movePlayer2)) "\r\n")
-    (println result)
+  (if (= (@connected_name_channel (thisGame :namePlayer1)) 0)
+	  (binding [*out* (player-streams (thisGame :namePlayer1))]
+	    (println (thisGame :namePlayer1) " -> " (thisGame :movePlayer1) "\r\n")
+	    (println *player-name* " -> " movePl2 "\r\n")
+	    (println result)
+	  )
+	  (do
+	    (async/send! (@connected_name_channel (thisGame :namePlayer1)) 
+	    		(str (thisGame :namePlayer1) " -> " (thisGame :movePlayer1) "\r\n"))
+	    (async/send! (@connected_name_channel (thisGame :namePlayer1)) (str *player-name* " -> " movePl2 "\r\n"))
+	    (async/send! (@connected_name_channel (thisGame :namePlayer1)) result)
+	  )
   )
 
   (def PlayingPlayers (apply merge (subvec PlayingPlayers 0 indexThisGame) (subvec PlayingPlayers (inc indexThisGame) (count PlayingPlayers))))
@@ -328,9 +391,9 @@
     (println "You cannot ahange your choise")
 
     (let []
-       (while (not (contains? object-game move2))
+       (while (not (contains? (apply hash-set object-game) move2))
         (do
-          (println "No correct move!")
+          (println "No correct move!") (print prompt) (flush) (.flush *out* )
           (def move2 (read-line))
         ))
        (result-game move2)
@@ -340,7 +403,7 @@
 ;;=================================
 (defn provPlayer
   "Play test"
-  [id2player]
+  [id2player your-move]
 
   (def id2playerLong (Long/parseLong id2player))
 
@@ -348,8 +411,6 @@
                          (apply merge (map :namePlayer1 PlayingPlayers) (map :namePlayer2 PlayingPlayers))
                   )
   )
-
-
   (try
     (do
       (def name2player ((first (filter #(= (% :id) id2playerLong) players-inventory)) :name))
@@ -357,7 +418,7 @@
               (contains? mapPlayers name2player)
               (= name2player *player-name*))
         (println "The player is not this room or he is busy or he not exist or you input your name. Try later.\r\n")
-        (rps2-game name2player)
+        (rps2-game name2player your-move)
       )
     )
     (catch NullPointerException e (println "The player is not exist"))
@@ -486,7 +547,6 @@
                "detect" detect
                "look" look
                "say" say
-               "tell" tell
                "help" help
                "play" provPlayer
                "play-" play-

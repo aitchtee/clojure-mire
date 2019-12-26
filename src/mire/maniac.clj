@@ -93,9 +93,9 @@
 				(if ( (keyword emotion)  @( :maniacs ( (keyword room ) @rooms) ) ) ;; If maniac is in the room
 								(do 
 											(alter ( :maniacs ( (keyword room ) @rooms) ) disj  (keyword emotion) 	) ;; Remove maniac from room
-											(str "Maniac died, uhahaha!")
+											(println "Maniac died, uhahaha!")
 								)
-								( str "Maniac isn't here" )
+								( println "Maniac isn't here" )
 					)
 			)
 )
