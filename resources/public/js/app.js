@@ -39,7 +39,9 @@ window.onload = function() {
 
         socket.onmessage = function(event) {
             var message = event.data;
+            // messages.innerHTML = "<p> ulzfuk </br> ejlfsdkch</p>";
             output("received", "<<< " + message);
+            
         };
 
         socket.onclose = function(event) {
