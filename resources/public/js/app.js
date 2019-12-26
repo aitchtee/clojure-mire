@@ -4,6 +4,12 @@ window.onload = function() {
   var sendBtn = document.getElementById('send');
   var closeBtn = document.getElementById('close');
   var messages = document.getElementById('messages');
+  
+  var northButton = document.getElementById('north');
+  var westButton = document.getElementById('west');
+  var eastButton = document.getElementById('east');
+  var southButton = document.getElementById('south');
+
 
   var socket;
 
@@ -61,4 +67,30 @@ window.onload = function() {
         }
         socket.close(1000, "Close button clicked");
     };
+    
+    // Movement Directions
+    northButton.onclick = function (e) {
+      moveToGivenDirection("north")
+    }
+    westButton.onclick = function (e) {
+      moveToGivenDirection("west")
+    }
+    eastButton.onclick = function (e) {
+      moveToGivenDirection("east")
+    }
+    southButton.onclick = function (e) {
+      moveToGivenDirection("north")
+    }
+    
+    function moveToGivenDirection(direction) {
+      if (socket == undefined) {
+        output('error', 'Not connected');
+        return;
+      }
+      socket.send(direction);
+      output("sent", ">>> " + direction);
+    }
+    
+    
+    
 };
