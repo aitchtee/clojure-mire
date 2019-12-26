@@ -1,5 +1,5 @@
 {
     :desc "You find yourself in a round room with a pillar in the middle."
-    :exits {:north :closet :south :hallway :west :fireplace}
-    :items #{:keys}
+    :exits {:north :closet :south :hallway :east :work :west :fireplace}
+    :items #{:keys :money}
 }

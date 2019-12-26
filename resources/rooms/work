@@ -1,0 +1,4 @@
+{:desc "You are in a work place."
+ :exits {:south :start}
+ 
+}
