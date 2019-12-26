@@ -52,6 +52,7 @@
 		            (join "\r\n" (map #(str "Player is " {:id (% :id), :name (% :name)} " here.\r\n")
 		                           (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
 		                              ))
+		            (join (str "GOLD " @(:gold @*current-room*) " here.\r\n"))
 		       )
 
 		       (doseq [namePlayers PlayingPlayers]
@@ -83,6 +84,7 @@
 		         																				[:namePlayer2 (namePlayers :namePlayer2)])
 		       														)]
 		 																					[:items @(:items @*current-room*)]
+		 																					[:gold @(:gold @*current-room*)]
 		 												)  
   	)
   )

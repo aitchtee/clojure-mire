@@ -30,13 +30,13 @@
     [ring.util.response       :refer (response redirect content-type)]
     )
   ; (:gen-class)
+  (:use [clojure.java.io :only [reader writer]]
+        [server.socket :only [create-server]])
  	
  )
 
-(def port (int 3333))
-  (:use [clojure.java.io :only [reader writer]]
-        [server.socket :only [create-server]])
   
+(def port (int 3335))
 
 
 (def money-all-players [])
@@ -275,7 +275,7 @@
 (defn -main
   ([& {:as args}]
   		(	let [
-  						port 	3334 
+  						port 	3335 
   						dir 	"resources/rooms"
   					]
 		  	(add-rooms dir)
@@ -308,7 +308,7 @@
 						 							)
 						 						))
 						 			]
-						 		(. (new Timer) (schedule task (long 50000)))
+						 		(. (new Timer) (schedule task (long 500000)))
 					)
 
 
