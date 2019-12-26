@@ -1,4 +1,4 @@
 {:desc "You find yourself in a round room with a pillar in the middle."
  :exits {:north :closet :south :hallway}
  :items #{:keys}
- :gold [:money :money :bagmoney20]}
+ :gold {:money 2 :bagmoney20 1}}
