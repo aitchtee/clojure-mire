@@ -89,7 +89,7 @@
        (commute (:inhabitants @*current-room*) conj *player-name*)
        (commute player-streams assoc *player-name* *out*)
        (commute connected_name_channel assoc *player-name* *player-channel*)
-       (println "channel = " *player-channel*)
+       ;(println "channel = " *player-channel*)
       )
 
       (println (look)) (print prompt) (flush)

@@ -9,6 +9,7 @@
   (:use [clojure.string :only [join]])
 
   (:require
+  		[clojure.data.json 						 :as json]
     [immutant.web             :as web]
     [immutant.web.async       :as async]
     [immutant.web.middleware  :as web-middleware]
@@ -40,23 +41,49 @@
 (defn look
   "Get a description of the surrounding environs and its contents."
   []
-  (println "You : " {:id *player-id*, :name *player-name*})
-  (str (:desc @*current-room*)
-       "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
-       (str (join "\r\n" (map #(str "There is " % " here.\r\n")
-                           @(:items @*current-room*)))
-       
-            (join "\r\n" (map #(str "Player is " {:id (% :id), :name (% :name)} " here.\r\n")
-                           (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
-                              ))
-       )
+  ( if (= *player-channel* 0)
+  	( do
+		  (println "You : " {:id *player-id*, :name *player-name*})
+		  (str (:desc @*current-room*)
+		       "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
+		       (str (join "\r\n" (map #(str "There is " % " here.\r\n")
+		                           @(:items @*current-room*)))
+		       
+		            (join "\r\n" (map #(str "Player is " {:id (% :id), :name (% :name)} " here.\r\n")
+		                           (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
+		                              ))
+		       )
 
-       (doseq [namePlayers PlayingPlayers]
-         (println "Playing : " (namePlayers :namePlayer1) " - " (namePlayers :namePlayer2))
-       )
+		       (doseq [namePlayers PlayingPlayers]
+		         (println "Playing : " (namePlayers :namePlayer1) " - " (namePlayers :namePlayer2))
+		       )
 
-       "Maniacs " (join "\r\n" (map #(str % " here.\r\n")
-                           @(:maniacs @*current-room*)))
+		       "Maniacs " (join "\r\n" (map #(str % " here.\r\n")
+		                           @(:maniacs @*current-room*)))
+
+	  	)
+		 )
+		 (json/write-str 
+		 				;println 
+		 							(conj {} [:name (:name @*current-room*)] 
+		 																					[:desc (:desc @*current-room*)] 
+		 																					[:exits (keys @(:exits @*current-room*))]
+		 																					[:inhabitants  ( for
+		 																									[x 
+		 																									(filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
+		 																									]
+		 																									(conj {} [ :id (:id x) ] [:name (:name x)])
+
+		 																									)
+		 																					]
+		 																					;[:maniacs @(:maniacs @*current-room*) ]
+		 																					[:playing   (doseq [namePlayers PlayingPlayers]
+		         														( conj {} 
+		         																				[:namePlayer1 (namePlayers :namePlayer1)] 
+		         																				[:namePlayer2 (namePlayers :namePlayer2)])
+		       														)]
+		 												)  
+  	)
   )
 )
 

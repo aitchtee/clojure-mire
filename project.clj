@@ -8,4 +8,5 @@
                  [ring/ring-core "1.3.0"]
                  [environ "1.0.0"]
                  [clj-tcp "1.0.1"]
+                 [org.clojure/data.json "0.2.7"]
                  ])
