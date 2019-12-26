@@ -82,6 +82,7 @@
 		         																				[:namePlayer1 (namePlayers :namePlayer1)] 
 		         																				[:namePlayer2 (namePlayers :namePlayer2)])
 		       														)]
+		 																					[:items @(:items @*current-room*)]
 		 												)  
   	)
   )
