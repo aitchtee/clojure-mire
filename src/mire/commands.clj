@@ -80,10 +80,10 @@
       (if (room-contains-gold? @*current-room* thing)
         (do
           (case thing
-            "coin" (alter *money* inc)
-            "bagmoney5" (alter *money* + 5)
-            "bagmoney10" (alter *money* + 10)
-            "bagmoney20" (alter *money* + 20)
+            "coin" (swap! *money* inc)
+            "bagmoney5" (swap! *money* + 5)
+            "bagmoney10" (swap! *money* + 10)
+            "bagmoney20" (swap! *money* + 20)
           )
           (if (= ((keyword thing) @(:gold @*current-room*)) 1)
             (alter (:gold @*current-room*) dissoc (keyword thing))
@@ -126,7 +126,7 @@
         (case thing
           "coin" (if (>= @*money* 0)
                     (do
-                      (alter *money* dec)
+                      (swap! *money* dec)
                       (if (room-contains-gold? @*current-room* thing)
                         (def temp-gold ((keyword thing) @(:gold @*current-room*)))
                         (def temp-gold 0)
@@ -138,7 +138,7 @@
                   )
           "bagmoney5" (if (>= @*money* 4)
                         (do
-                          (alter *money* - 5)
+                          (swap! *money* - 5)
                           (if (room-contains-gold? @*current-room* thing)
                             (def temp-gold ((keyword thing) @(:gold @*current-room*)))
                             (def temp-gold 0)
@@ -150,7 +150,7 @@
                       )
           "bagmoney10" (if (>= @*money* 9)
                          (do
-                           (alter *money* - 10)
+                           (swap! *money* - 10)
                            (if (room-contains-gold? @*current-room* thing)
                              (def temp-gold ((keyword thing) @(:gold @*current-room*)))
                              (def temp-gold 0)
@@ -162,7 +162,7 @@
                        )
           "bagmoney20" (if (>= @*money* 19)
                          (do
-                           (alter *money* - 20)
+                           (swap! *money* - 20)
                            (if (room-contains-gold? @*current-room* thing)
                              (def temp-gold ((keyword thing) @(:gold @*current-room*)))
                              (def temp-gold 0)
