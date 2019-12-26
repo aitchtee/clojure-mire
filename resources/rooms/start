@@ -2,4 +2,5 @@
     :desc "You find yourself in a round room with a pillar in the middle."
     :exits {:north :closet :south :hallway :west :fireplace}
     :items #{:keys}
+    :gold {:coin 2 :bagmoney20 1}
 }

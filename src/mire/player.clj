@@ -6,6 +6,7 @@
 (def ^:dynamic *emoji-available*)
 (def ^:dynamic *player-name*)
 (def ^:dynamic *player-id*)
+(def ^:dynamic *money*)
 
 
 (def prompt "> ")

@@ -40,11 +40,13 @@
     (def id idPlayer)
     (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
 
+    (def Money 0)
     (binding [
               *player-id*  idPlayer
               *player-name*  player-name
               *current-room* (ref (@rooms :start))
               *inventory* player-inventory
+              *money* (ref Money)
               *current-emoji* (ref :no_emotion)
               *emoji-available* (ref #{:no_emotion :sad})]
       (dosync
