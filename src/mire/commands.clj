@@ -343,6 +343,67 @@
 				)
 	)
 )
+;;===================================
+
+(defn finished "for work" []
+  (println "Thanks for working!\r\n")
+  (println "You've earn " @*money*)
+    )
+
+(defn forthTask "for work" []
+  (println "How many members in EXO")
+  (println "a-8, b-11, c-9\r\n")
+  (def ans(read-line))
+  (case ans
+   "c"(do (swap! *money* + 1) (println @*money*) (finished)),
+   "b" (do (println "Wrong!") (finished)),
+   "a" (do (println "Wrong!") (finished)))
+  (println "Here's it, if you wish to earn more just ask for 'work'...\r\n")
+  )
+
+(defn thirdTask "for work" []
+  (println "How many regions in Russia")
+  (println "a-84, b-85, c-76\r\n")
+  (def ans(read-line))
+  (case ans
+      "b"(do (swap! *money* + 1) (println @*money*) (forthTask)),
+      "c" (do (println "Wrong!") (forthTask)),
+      "a" (do (println "Wrong!") (forthTask)))
+    )
+
+(defn secondTask "for work" []
+  (println "What is 5+5*3-1+9/3?")
+  (println "a-17, b-12, c-22\r\n")
+  (def ans(read-line))
+  (case ans
+    "c" (do (swap! *money* + 1) (println @*money*) (thirdTask)),
+    "a" (do (println "Wrong!") (thirdTask)),
+    "b" (do (println "Wrong!") (thirdTask)))
+  )
+
+(defn firstTask "for work" []
+  (println "How many colours in rainbow?")
+  (println "a-7, b-5, c-6\r\n")
+  (def ans(read-line))
+  (case ans
+    "a" (do (swap! *money* + 1) (println @*money*) (secondTask)),
+    "b" (do (println "Wrong!") (secondTask)),
+    "c" (do (println "Wrong!") (secondTask))
+    )
+  )
+
+  (defn work "This is work" []
+    (println "yes: I need to work")
+    (println "no: I don't want to work")
+    (println "Write your answer: ")
+    (def answer (read-line))
+    (case answer
+        "yes" (firstTask),
+        "no" "Ok, maybe next time"
+    )
+  )
+
+
 ;;==================================
 
 ;; Command data
@@ -366,6 +427,7 @@
                "curr_emoji" curr_emoji
                "list_emoji" list_emoji
                "set_emoji" set_emoji
+               "work" work
                ;"say_loud" say_loud
                ;"kill-maniac" kill-maniac
                })
