@@ -475,62 +475,70 @@
 ;;===================================
 
 (defn finished "for work" []
-  (println "Thanks for working!\r\n")
-  (println "You've earn " @*money*)
+  (println  "Thanks for working!\r\n") (print prompt) (flush) (.flush *out* )
+  (println "You've earn " @*money*) (print prompt) (flush) (.flush *out* )
     )
 
 (defn forthTask "for work" []
-  (println "How many members in EXO")
-  (println "a-8, b-11, c-9\r\n")
+  (println "How many members in EXO") (print prompt) (flush) (.flush *out* )
+  (println "a-8, b-11, c-9\r\n") (print prompt) (flush) (.flush *out* )
   (def ans(read-line))
   (case ans
-   "c"(do (swap! *money* + 1) (println @*money*) (finished)),
-   "b" (do (println "Wrong!") (finished)),
-   "a" (do (println "Wrong!") (finished)))
-  (println "Here's it, if you wish to earn more just ask for 'work'...\r\n")
+   "c"(do (swap! *money* + 1) (println @*money*) (print prompt) (flush) (.flush *out* ) (finished)) ,
+   "b" (do (println "Wrong!") (println prompt) (print prompt) (flush) (.flush *out* ) (finished)),
+   "a" (do (println "Wrong!") (println prompt) (print prompt) (flush) (.flush *out* ) (finished)))
+  (println "Here's it, if you wish to earn more just ask for 'work'...\r\n") (print prompt) (flush) (.flush *out* )
   )
 
 (defn thirdTask "for work" []
-  (println "How many regions in Russia")
-  (println "a-84, b-85, c-76\r\n")
+  (println "How many regions in Russia") (print prompt) (flush) (.flush *out* )
+  (println "a-84, b-85, c-76\r\n") (print prompt) (flush) (.flush *out* )
   (def ans(read-line))
   (case ans
-      "b"(do (swap! *money* + 1) (println @*money*) (forthTask)),
-      "c" (do (println "Wrong!") (forthTask)),
-      "a" (do (println "Wrong!") (forthTask)))
+      "b"(do (swap! *money* + 1) (println @*money*) (print prompt) (flush) (.flush *out* ) (forthTask)),
+      "c" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (forthTask)),
+      "a" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (forthTask)))
     )
 
 (defn secondTask "for work" []
-  (println "What is 5+5*3-1+9/3?")
-  (println "a-17, b-12, c-22\r\n")
+  (println "What is 5+5*3-1+9/3?") (print prompt) (flush) (.flush *out* )
+  (println "a-17, b-12, c-22\r\n") (print prompt) (flush) (.flush *out* )
   (def ans(read-line))
   (case ans
-    "c" (do (swap! *money* + 1) (println @*money*) (thirdTask)),
-    "a" (do (println "Wrong!") (thirdTask)),
-    "b" (do (println "Wrong!") (thirdTask)))
+    "c" (do (swap! *money* + 1) (println @*money*) (print prompt) (flush) (.flush *out* ) (thirdTask)),
+    "a" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (thirdTask)),
+    "b" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (thirdTask)))
   )
 
 (defn firstTask "for work" []
-  (println "How many colours in rainbow?")
-  (println "a-7, b-5, c-6\r\n")
+  (println "How many colours in rainbow?") (print prompt) (flush) (.flush *out* )
+  (println "a-7, b-5, c-6\r\n") (print prompt) (flush) (.flush *out* )
   (def ans(read-line))
   (case ans
-    "a" (do (swap! *money* + 1) (println @*money*) (secondTask)),
-    "b" (do (println "Wrong!") (secondTask)),
-    "c" (do (println "Wrong!") (secondTask))
+    "a" (do (swap! *money* + 1) (println @*money*) (print prompt) (flush) (.flush *out* ) (secondTask)),
+    "b" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (secondTask)),
+    "c" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (secondTask))
     )
   )
 
   (defn work "This is work" []
-    (println "yes: I need to work")
-    (println "no: I don't want to work")
-    (println "Write your answer: ")
+
+  (if (= (:name @*current-room*) (keyword "work")) 
+  ( do 
+    (println "yes: I need to work") (print prompt) (flush) (.flush *out* )
+    (println "no: I don't want to work") (print prompt) (flush) (.flush *out* )
+    (println "Write your answer: ") (print prompt) (flush) (.flush *out* )
     (def answer (read-line))
     (case answer
         "yes" (firstTask),
         "no" "Ok, maybe next time"
     )
   )
+  (do
+  (println "You aren't at work. Please, go to work to use this command") (print prompt) (flush) (.flush *out* )
+  )
+ )
+)
 
 
 ;;==================================

@@ -8,8 +8,8 @@
      (str (first (read-line)))
  )
  (case answer
-     "yes" : (println "Let's start!")
-     "no"  : (println "Ok, maybe next time.")
+     "yes" : (println "Let's start!") (println prompt)
+     "no"  : (println "Ok, maybe next time.") (println prompt)
  )
 
  )
