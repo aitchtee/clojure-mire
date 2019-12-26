@@ -176,27 +176,6 @@
     )
     (str "You said " message)))
 
-(defn tell
-  "Tell something out loud so everyone in the room can hear."
-  [namePlayer & words]
-
-  ; (println namePlayer)
-  ; (println words)
-
-  ; (println "Input text message for player " namePlayer " : ")
-  ;   (def message (read-line))
-
-      ; (binding [*out* (player-streams namePlayer)]
-      ;   (println "Message from " *player-name* " : " message)
-      ;   (print prompt)
-      ;   )
-      ; (if (@connected_name_channel namePlayer)
-		  	; (async/send! (connected_name_channel namePlayer) (str *player-name* " : " message))
-		  	; (flush)
-      ; )
-    (str "You message was send player " namePlayer)
-)
-
 (defn help
   "Show available commands and what they do."
   []
@@ -209,7 +188,7 @@
   [name2player your-move]
 
   (def nameGame "This is Rock-Paper-Scissors game")
-  (async/send! *player-channel* nameGame) (print prompt) (flush) (.flush *out* )                                     ;; Говорим, что это за игра
+  (print nameGame) (print prompt) (flush) (.flush *out* )                                     ;; Говорим, что это за игра
 
   ; (println "Your move(1 - rock ; 2 - paper ; 3 - scissors) : ") (print prompt) (flush) (.flush *out* )
   ; (def moveplayer (read-line))
@@ -217,8 +196,8 @@
 
   (def moveplayer-object your-move)
 
-  (if (not (contains? object-game moveplayer-object))
-	  (while (not (contains? object-game moveplayer-object))
+  (if (not (contains? (apply hash-set object-game) moveplayer-object))
+	  (while (not (contains? (apply hash-set object-game) moveplayer-object))
 	    (do
 	      (print "No correct move!") (print prompt) (flush) (.flush *out* )
 	      (def moveplayer-object (read-line))
@@ -227,23 +206,20 @@
 	  )  	
   )
 
-  (def moveplayer (+ (.indexOf object-game your-move) 1))
-  ; (while (not (contains? object-game moveplayer))
-  ;   (do
-  ;     (print "No correct move!") (print prompt) (flush) (.flush *out* )
-  ;     (def moveplayer (read-line))
-  ; 	)
-  ; )
+  (changeStatus *player-name* name2player moveplayer-object)
 
-
-
-  (changeStatus *player-name* name2player moveplayer)
 ;=========================
-  (binding [*out* (player-streams name2player)]
-    (println "Player " *player-name* " wants play game with you!") (print prompt) (flush) (.flush *out* )
-    (println "You need play game. Format(N = 1(rock) or 2(paper) or 3(scissors)) : play- N !!!")
-    (print prompt)
-  )
+		(if (= (@connected_name_channel name2player) 0)
+	  (binding [*out* (player-streams name2player)]
+	    (println "Player " *player-name* " wants play game with you!") (print prompt) (flush) (.flush *out* )
+	    (println "You need play game. Format(N = rock or paper or scissors) : play- N !!!")
+	    (print prompt)
+	  )
+	  (do
+	  	(async/send! (@connected_name_channel name2player) (str "Player " *player-name* " wants play game with you!"))
+	  	(async/send! (@connected_name_channel name2player) "You need play game. Format(N = rock or paper or scissors) : play- N !!!")
+	  )
+		)
 ;-------------------------
 )
 ;;=================================
@@ -269,18 +245,17 @@
 ;;=================================
 (defn result-game
   "End Game"
-  [movePlayer2]
+  [movePl2]
 
-  ; (def object-game (apply vector object-game))
-  ; (def object-game-words ["rock" "paper" "scissors"])
   (def indexThisGame (.indexOf (map :namePlayer2 PlayingPlayers) *player-name*))
   (def thisGame (PlayingPlayers indexThisGame))
-  (def movePlayer1 (thisGame :movePlayer1))
+  (def movePlayer1 (+ (.indexOf object-game (thisGame :movePlayer1)) 1))
+  (def movePlayer2 (+ (.indexOf object-game movePl2) 1))
 
-  (println (thisGame :namePlayer1) " -> " movePlayer1 "\r\n")
-  (println *player-name* " -> " movePlayer2 "\r\n")
+  (println (thisGame :namePlayer1) " -> " (thisGame :movePlayer1) "\r\n")
+  (println *player-name* " -> " movePl2 "\r\n")
 
-  (def result (- (.indexOf object-game movePlayer1) (.indexOf object-game movePlayer2)))                         ;; Переменная результата
+  (def result (- movePlayer1 movePlayer2))                         ;; Переменная результата
 ;;   (if (or (= result 1) (= result -2)) (def result (str (thisGame :namePlayer1) " is WIN.")))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
 ;;   (if (or (= result -1) (= result 2)) (def result (str *player-name* " is WIN.")))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
   (if (or (= result 1) (= result -2))
@@ -298,10 +273,18 @@
   (if (= result 0) (def result (str "Draw. Each remained at his own.")))                                    ;; Если ничья, то каждый остается при своем и игра заканчивается.
 
   (println result)
-  (binding [*out* (player-streams (thisGame :namePlayer1))]
-    (println (thisGame :namePlayer1) " -> " (object-game (.indexOf object-game movePlayer1)) "\r\n")
-    (println *player-name* " -> " (object-game (.indexOf object-game movePlayer2)) "\r\n")
-    (println result)
+  (if (= (@connected_name_channel (thisGame :namePlayer1)) 0)
+	  (binding [*out* (player-streams (thisGame :namePlayer1))]
+	    (println (thisGame :namePlayer1) " -> " (thisGame :movePlayer1) "\r\n")
+	    (println *player-name* " -> " movePl2 "\r\n")
+	    (println result)
+	  )
+	  (do
+	    (async/send! (@connected_name_channel (thisGame :namePlayer1)) 
+	    		(str (thisGame :namePlayer1) " -> " (thisGame :movePlayer1) "\r\n"))
+	    (async/send! (@connected_name_channel (thisGame :namePlayer1)) (str *player-name* " -> " movePl2 "\r\n"))
+	    (async/send! (@connected_name_channel (thisGame :namePlayer1)) result)
+	  )
   )
 
   (def PlayingPlayers (apply merge (subvec PlayingPlayers 0 indexThisGame) (subvec PlayingPlayers (inc indexThisGame) (count PlayingPlayers))))
@@ -317,7 +300,7 @@
     (println "You cannot ahange your choise")
 
     (let []
-       (while (not (contains? object-game move2))
+       (while (not (contains? (apply hash-set object-game) move2))
         (do
           (println "No correct move!") (print prompt) (flush) (.flush *out* )
           (def move2 (read-line))
@@ -411,7 +394,6 @@
                "detect" detect
                "look" look
                "say" say
-               "tell" tell
                "help" help
                "play" provPlayer
                "play-" play-
@@ -419,8 +401,6 @@
                "curr_emoji" curr_emoji
                "list_emoji" list_emoji
                "set_emoji" set_emoji
-               ;"say_loud" say_loud
-               ;"kill-maniac" kill-maniac
                })
 
 ;; Command handling
