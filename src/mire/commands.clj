@@ -294,14 +294,80 @@
     (rps2-game name2player)
   )
 )
+
+;;=================================
+;;============work=================
+
+
+(defn finished "for work" []
+  (println "Thanks for working!\r\n")
+    )
+
+(defn forthTask "for work" []
+  (println "How many members in EXO")
+  (println "a-8, b-11, c-9\r\n")
+  (def ans(read-line))
+  (case ans
+   "c" (finished),
+   "b" "Wrong!"
+   "a" "Wrong!")
+  (println "Here's it, if you wish to earn more just ask for 'work'...\r\n")
+  )
+
+(defn thirdTask "for work" []
+  (println "How many regions in Russia")
+  (println "a-84, b-85, c-76\r\n")
+  (def ans(read-line))
+  (case ans
+      "b" (forthTask),
+      "c" "Wrong!"
+      "a" "Wrong!")
+    )
+
+(defn secondTask "for work" []
+  (println "What is 5+5*3-1+9/3?")
+  (println "a-17, b-12, c-22\r\n")
+  (def ans(read-line))
+  (case ans
+    "c" (thirdTask),
+    "a" "Wrong!"
+    "b" "Wrong!")
+  )
+
+(defn firstTask "for work" []
+  (println "How many colours in rainbow?")
+  (println "a-7, b-5, c-6\r\n")
+  (def ans(read-line))
+  (case ans
+    "a"  (secondTask),
+    "b" "Wrong!"
+    "c" "Wrong!"
+    )
+  )
+
+  (defn work "This is work" []
+    (println "yes: I need to work")
+    (println "no: I don't want to work")
+    (println "Write your answer: ")
+    (def answer (read-line))
+    (case answer
+        "yes" (firstTask),
+        "no" "Ok, maybe next time"
+    )
+  )
+
+
+;;==================================
+;;==========end of work=============
+
 ;;==================================
 ;; Command data
 
 (def commands {"move" move
                "north" (fn [] (move :north)),
                "south" (fn [] (move :south)),
-               "east"  (fn [] (move :east))
-               "west"  (fn [] (move :west))
+               "east"  (fn [] (move :east)),
+               "west"  (fn [] (move :west)),
                "grab" grab
                "discard" discard
                "inventory" inventory
@@ -313,6 +379,7 @@
                "play" provPlayer
                "play-" play-
                "ei" exchange-inventory
+               "work" work
                })
 
 ;; Command handling
