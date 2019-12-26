@@ -1,4 +1,4 @@
 {:desc "You are in a long, low-lit hallway that turns to the east."
- :items #{:detector}
+ :items #{:detector :money}
  :exits {:north :start :east :promenade}
  :lock #{:keys}}

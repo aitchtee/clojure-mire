@@ -6,5 +6,5 @@
 (defn newPlayer
   [idPlayer player-name]
   (def idPlayer (inc idPlayer))
-  (def players-inventory (conj players-inventory {:id (inc idPlayer), :name player-name, :inventory (ref #{})}))
+  (def players-inventory (conj players-inventory {:id (inc idPlayer), :name player-name, :inventory (ref #{}), :money (atom 0)}))
 )
