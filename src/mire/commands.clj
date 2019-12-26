@@ -4,12 +4,30 @@
         [mire.data :only [players-inventory]]
         [mire.maniac]
         [mire.utilities]
-        [mire.emojiList])
-  (:use [clojure.string :only [join]]))
+        [mire.emojiList]
+        [clojure.java.io])
+  (:use [clojure.string :only [join]])
+
+  (:require
+    [immutant.web             :as web]
+    [immutant.web.async       :as async]
+    [immutant.web.middleware  :as web-middleware]
+    [compojure.route          :as route]
+    [environ.core             :refer (env)]
+    [compojure.core           :refer (ANY GET defroutes)]
+    [ring.util.response       :refer (response redirect content-type)]
+  )
+  (:import 
+		(java.lang String Thread)
+		(java.net InetAddress ServerSocket  Socket SocketException)
+    (java.io InputStreamReader OutputStream  PrintWriter StringReader StringWriter IOException PipedInputStream PipedOutputStream)
+
+  )
+)
 
 (def PlayingPlayers [])
 
-(def object-game (hash-set "1" "2" "3"))
+(def object-game (vector "rock" "paper" "scissors"))
 
 (defn changeStatus
   [namePlayer1 namePlayer2 movePlayer1]
@@ -116,22 +134,39 @@
   [& words]
   (let [message (join " " words)]
     (doseq [inhabitant (disj @(:inhabitants @*current-room*) *player-name*)]
-      (binding [*out* (player-streams inhabitant)]
-        (print *player-name* " : " message " " prompt)
-        ))
+    	(def other-player-channel (connected_name_channel inhabitant))
+    	(if (= other-player-channel 0)
+	      (binding [*out* (player-streams inhabitant)]
+	        (println *player-name* " : " message " " prompt)
+	      )
+	      (if (@connected_name_channel inhabitant)
+	      	(do
+				  	(async/send! (connected_name_channel inhabitant) (str *player-name* " : " message " " prompt))
+				  	(flush)
+	      	)
+	      )
+    	)
+    )
     (str "You said " message)))
 
 (defn tell
-  "Say something out loud so everyone in the room can hear."
-  [namePlayer]
+  "Tell something out loud so everyone in the room can hear."
+  [namePlayer & words]
 
-  (println "Input text message for player " namePlayer " : ")
-    (def message (read-line))
+  ; (println namePlayer)
+  ; (println words)
 
-      (binding [*out* (player-streams namePlayer)]
-        (println "Message from " *player-name* " : " message)
-        (print prompt)
-        )
+  ; (println "Input text message for player " namePlayer " : ")
+  ;   (def message (read-line))
+
+      ; (binding [*out* (player-streams namePlayer)]
+      ;   (println "Message from " *player-name* " : " message)
+      ;   (print prompt)
+      ;   )
+      ; (if (@connected_name_channel namePlayer)
+		  	; (async/send! (connected_name_channel namePlayer) (str *player-name* " : " message))
+		  	; (flush)
+      ; )
     (str "You message was send player " namePlayer)
 )
 
@@ -144,27 +179,45 @@
 ;; ///////////////////////////////////////////////////////////////////////////////////////////////
 (defn rps2-game                                              ;; Игра Камень-Ножницы-Бумага2
   "Get move 1st player"                                ;; Это типа ее описание
-  [name2player]
+  [name2player your-move]
 
   (def nameGame "This is Rock-Paper-Scissors game")
-  (println nameGame)                                        ;; Говорим, что это за игра
+  (async/send! *player-channel* nameGame) (print prompt) (flush) (.flush *out* )                                     ;; Говорим, что это за игра
 
-  (println "Your move(1 - rock ; 2 - paper ; 3 - scissors) : ")
-  (def moveplayer (read-line))
+  ; (println "Your move(1 - rock ; 2 - paper ; 3 - scissors) : ") (print prompt) (flush) (.flush *out* )
+  ; (def moveplayer (read-line))
+  ; (def moveplayer -1)
 
-  (while (not (contains? object-game moveplayer))
-    (do
-      (println "No correct move!")
-      (def moveplayer (read-line))
-  ))
+  (def moveplayer-object your-move)
+
+  (if (not (contains? object-game moveplayer-object))
+	  (while (not (contains? object-game moveplayer-object))
+	    (do
+	      (print "No correct move!") (print prompt) (flush) (.flush *out* )
+	      (def moveplayer-object (read-line))
+	      (println moveplayer-object)
+	  	)
+	  )  	
+  )
+
+  (def moveplayer (+ (.indexOf object-game your-move) 1))
+  ; (while (not (contains? object-game moveplayer))
+  ;   (do
+  ;     (print "No correct move!") (print prompt) (flush) (.flush *out* )
+  ;     (def moveplayer (read-line))
+  ; 	)
+  ; )
+
+
 
   (changeStatus *player-name* name2player moveplayer)
-
+;=========================
   (binding [*out* (player-streams name2player)]
-    (println "Player " *player-name* " wants play game with you!")
+    (println "Player " *player-name* " wants play game with you!") (print prompt) (flush) (.flush *out* )
     (println "You need play game. Format(N = 1(rock) or 2(paper) or 3(scissors)) : play- N !!!")
-    (println prompt)
+    (print prompt)
   )
+;-------------------------
 )
 ;;=================================
 (defn let-fly-inventory
@@ -191,16 +244,16 @@
   "End Game"
   [movePlayer2]
 
-  (def vector-object-game (apply vector object-game))
-  (def object-game-words ["rock" "paper" "scissors"])
+  ; (def object-game (apply vector object-game))
+  ; (def object-game-words ["rock" "paper" "scissors"])
   (def indexThisGame (.indexOf (map :namePlayer2 PlayingPlayers) *player-name*))
   (def thisGame (PlayingPlayers indexThisGame))
   (def movePlayer1 (thisGame :movePlayer1))
 
-  (println (thisGame :namePlayer1) " -> " (object-game-words (.indexOf vector-object-game movePlayer1)) "\r\n")
-  (println *player-name* " -> " (object-game-words (.indexOf vector-object-game movePlayer2)) "\r\n")
+  (println (thisGame :namePlayer1) " -> " movePlayer1 "\r\n")
+  (println *player-name* " -> " movePlayer2 "\r\n")
 
-  (def result (- (.indexOf vector-object-game movePlayer1) (.indexOf vector-object-game movePlayer2)))                         ;; Переменная результата
+  (def result (- (.indexOf object-game movePlayer1) (.indexOf object-game movePlayer2)))                         ;; Переменная результата
 ;;   (if (or (= result 1) (= result -2)) (def result (str (thisGame :namePlayer1) " is WIN.")))              ;; Если то, что поставила система дальше по списку, чем наш элемент(т.е result=1), то система победила. И, если result=-2(случай краевых элементов), то тоже
 ;;   (if (or (= result -1) (= result 2)) (def result (str *player-name* " is WIN.")))                 ;; Аналогично, просто меняем знаки, и тогда мы победили
   (if (or (= result 1) (= result -2))
@@ -219,8 +272,8 @@
 
   (println result)
   (binding [*out* (player-streams (thisGame :namePlayer1))]
-    (println (thisGame :namePlayer1) " -> " (object-game-words (.indexOf vector-object-game movePlayer1)) "\r\n")
-    (println *player-name* " -> " (object-game-words (.indexOf vector-object-game movePlayer2)) "\r\n")
+    (println (thisGame :namePlayer1) " -> " (object-game (.indexOf object-game movePlayer1)) "\r\n")
+    (println *player-name* " -> " (object-game (.indexOf object-game movePlayer2)) "\r\n")
     (println result)
   )
 
@@ -239,7 +292,7 @@
     (let []
        (while (not (contains? object-game move2))
         (do
-          (println "No correct move!")
+          (println "No correct move!") (print prompt) (flush) (.flush *out* )
           (def move2 (read-line))
         ))
        (result-game move2)
@@ -249,7 +302,7 @@
 ;;=================================
 (defn provPlayer
   "Play test"
-  [id2player]
+  [id2player your-move]
 
   (def id2playerLong (Long/parseLong id2player))
 
@@ -257,8 +310,6 @@
                          (apply merge (map :namePlayer1 PlayingPlayers) (map :namePlayer2 PlayingPlayers))
                   )
   )
-
-
   (try
     (do
       (def name2player ((first (filter #(= (% :id) id2playerLong) players-inventory)) :name))
@@ -266,7 +317,7 @@
               (contains? mapPlayers name2player)
               (= name2player *player-name*))
         (println "The player is not this room or he is busy or he not exist or you input your name. Try later.\r\n")
-        (rps2-game name2player)
+        (rps2-game name2player your-move)
       )
     )
     (catch NullPointerException e (println "The player is not exist"))
