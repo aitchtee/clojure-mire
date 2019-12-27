@@ -101,6 +101,33 @@ window.onload = function() {
         socket.close(1000, "Close button clicked");
     };
     
+//    function grabStuff(e) { dazna warkdazna wark dazna warkdazna warkdazna wark
+//      if (socket == undefined) {
+//        output("error", 'Not connected');
+//        return;
+//      }
+//      
+//      let name = grabButton.value;
+//       socket.send("grab "+name);
+//    };
+//    
+//    grabButton.onclick = grabStuff();
+//    
+    
+    //works
+    grabButton.onclick = function(e) {
+      if (socket == undefined) {
+        output('error', 'Not connected');
+        return;
+      }
+      let name = grabButton.textContent;
+      alert(name);
+      socket.send("grab "+name);
+    };
+    
+    
+    
+    
     // Movement Directions
     northButton.onclick = function (e) {
       moveToGivenDirection("north")
@@ -114,6 +141,8 @@ window.onload = function() {
     southButton.onclick = function (e) {
       moveToGivenDirection("south")
     };
+    
+    
     
     function moveToGivenDirection(direction) {
       if (socket == undefined) {
@@ -148,6 +177,16 @@ window.onload = function() {
         moveToGivenDirection("south")
       }
       
+      if (e.code === "ShiftRight") {
+        if (socket != undefined) {
+          let name = grabButton.textContent;
+          alert(name);
+          socket.send("grab "+name);
+        }
+        else {
+          output('error', 'Not connected');
+        }
+      }
     });
     
     function updateUI(data) {
