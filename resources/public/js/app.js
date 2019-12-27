@@ -9,6 +9,10 @@ window.onload = function() {
   var westButton = document.getElementById('west');
   var eastButton = document.getElementById('east');
   var southButton = document.getElementById('south');
+  
+  var inhabitantsList = document.getElementById('inhabitantsList');
+  var roomData = document.getElementById('roomData');
+
 
 
   var socket;
@@ -27,6 +31,10 @@ window.onload = function() {
             return;
         }
 
+        openBtn.style.background = "#4a4a4a";
+        closeBtn.style.background = "#ffe6cc";
+
+        
         var uri = "ws://" + location.host + location.pathname;
         uri = uri.substring(0, uri.lastIndexOf('/'));
         socket = new WebSocket(uri);
@@ -147,11 +155,13 @@ window.onload = function() {
       }
       
       // UPDATING
+      
+      // set default state for nav btns
       let navigationButtons = [northButton, westButton, eastButton, southButton];
       for (i in navigationButtons)
         navigationButtons[i].style.color = "#4a4a4a";
         
-      
+      // set the nav btns
       let exits = currentState.exits;
       
       for (index in exits) {
@@ -163,6 +173,28 @@ window.onload = function() {
         }
       }
       
+      // Setting up inhabitants List
+      let inhabitants = currentState.inhabitants;
+      var inhabitantsString = "";
+      
+      for (i in inhabitants) {
+        inhabitantsString += inhabitants[i].id + "  " + inhabitants[i].name + "<br><br>";
+      }
+
+      inhabitantsList.innerHTML = inhabitantsString;
+      
+      // Setting up room data
+      var roomDataString = "";
+      
+      roomDataString += currentState.name + "<br><br>";
+      roomDataString += currentState.desc + "<br>";
+      
+      roomDataString += "<br>Exits:<br>";     
+      for (i in exits) {
+        roomDataString += "- " + exits[i] + "<br>"
+      }
+
+      roomData.innerHTML = roomDataString;
     }
     
 };

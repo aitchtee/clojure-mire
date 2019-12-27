@@ -4,19 +4,61 @@
   <title>WebSocket Demo</title>
   
   <style>
-  
+    
+/*    header*/
     h1 {
       font-size: 45;
       font-family: Luminari, fantasy;
       text-align: center;
-      margin: 10%;
+      margin: 5%;
+    }
+
+/*    Top  */
+    #inhabitantsView {
+      float:left;
+      width: 20vw;
+/*      height: 20vw;*/
+      margin-left: 10%;
+      margin-right: 5%;
+      background-color: #4a4a4a;
+      
+      padding: 15px;
+      
+    }
+    
+    #inhabitantsList {
+      color: white;
+      font-family: Arial;
+      font-size: 18;
+    }
+    
+    
+    #roomView {
+      float: left;
+      
+      width: 20vw;
+/*      height: 20vw;*/
+      margin-right: 5%;
+
+      background-color: #4a4a4a;
+      padding: 15px;
+
+    }
+    
+    #roomData {
+      color: white;
+      font-family: Arial;
+      font-size: 18;
     }
   
+/*  joystick*/
     #joystick {
-/*      background-color: #24bdb8;*/
       width: 25vw;
       height: 25vw;
-      margin: 10% auto;
+/*      margin: 10% auto;*/
+      float:left;
+      margin-right: 5%;
+      
     }
     
     .joystick_button {
@@ -32,6 +74,7 @@
       font-size: 20;
       
       font-family: Arial;
+      cursor: pointer;
     }
     
     #toHide {
@@ -43,13 +86,16 @@
     }
   
     #input {
-      width: 70%;
-      height: 4%;
+      width: 80%;
+      height: 5%;
       margin: 10% auto;
       
       display: block;
       background: #4a4a4a;
       color: white;
+      
+      font-family: Courier;
+      font-size: 16;
     }
     
     .controlButtons:  {
@@ -86,25 +132,40 @@
       
     }
     
+    #open {
+      background-color: #52af96;
+    }
+    
   </style>
 </head>
 <body>
   <h1> Good MUD </h1>
   
-    <form id="joystick">
-      <button type="button" id="toHide" disabled="disabled"></button>
-      <button type="button" id="north" class="joystick_button"> N</button>
-      <button type="button" id="toHide" disabled="disabled"></button>
+  
+      <form id="inhabitantsView">
+        <h2 style="color: white; font-family: Helvetica; font-style: underline;">Inhabitants </h2>
+        <h2 id="inhabitantsList"></h2>
+      </form>
       
-      <button type="button" id="west" class="joystick_button"> W</button>
-      <button type="button" id="toHide" class="joystick_button">  </button>
-      <button type="button" id="east" class="joystick_button"> E</button>
+      <form id="roomView">
+        <h2 style="color: white; font-family: Helvetica; font-style: underline;"> Room </h2>
+        <h2 id="roomData"></h2>
+      </form>
 
-      <button type="button" id="toHide" > 0000000 </button>
-      <button type="button" id="south" class="joystick_button"> S</button>
-      <button type="button" id="toHide" > 0000000</button>
-    </form>
     
+      <form id="joystick">
+        <button type="button" id="toHide" disabled="disabled"></button>
+        <button type="button" id="north" class="joystick_button"> N</button>
+        <button type="button" id="toHide" disabled="disabled"></button>
+        
+        <button type="button" id="west" class="joystick_button"> W</button>
+        <button type="button" id="toHide" class="joystick_button">  </button>
+        <button type="button" id="east" class="joystick_button"> E</button>
+
+        <button type="button" id="toHide" > 0000000 </button>
+        <button type="button" id="south" class="joystick_button"> S</button>
+        <button type="button" id="toHide" > 0000000</button>
+      </form>
     
     <div>
       <input type="text" id="input" value="" placeholder=" Type a command ..."/>
