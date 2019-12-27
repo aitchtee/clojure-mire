@@ -49,13 +49,26 @@
 	(println "finish-game")
 	(def all-money ())
 	(doseq [info players-inventory]
-		(println (info :name) " -> " @(info :money) " gold.")
+		(doseq [info2 players-inventory]
+			(if (not= (@connected_name_channel info2) 0)
+				(async/send! (@connected_name_channel (info2 :name)) (str (info :name) " -> " @(info :money) " gold."))
+				(println (info :name) " -> " @(info :money) " gold.")
+			)
+		)
+		; (if (= (@connected_name_channel info2) 0)
+		; 	(println (info :name) " -> " @(info :money) " gold.")
+		; )		
 		(def all-money (conj all-money @(info :money)))
 	)
 	(def max-money (apply max all-money))
 	(def winers (filter #(= @(% :money) max-money) players-inventory))
-	(doseq [winer winers]
-		(println (winer :name) " is WINER!!!")
+	(doseq [info players-inventory]
+		(doseq [winer winers]
+			(if (not= (@connected_name_channel info) 0)
+				(async/send! (@connected_name_channel (info :name)) (str (winer :name) " is WINER!!!"))
+				(println (winer :name) " is WINER!!!")
+			)
+		)
 	)
 )
 
@@ -130,7 +143,7 @@
                (print prompt) (flush)
                (.flush *out* )
                (recur (read-line))))
-           (finally (cleanup))))))
+           (finally (cleanup *player-name*))))))
 
 
 ;==server=functions
@@ -308,7 +321,7 @@
 						 							)
 						 						))
 						 			]
-						 		(. (new Timer) (schedule task (long 500000)))
+						 		(. (new Timer) (schedule task (long 50000)))
 					)
 
 
