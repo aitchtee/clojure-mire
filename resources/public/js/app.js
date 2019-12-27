@@ -257,13 +257,13 @@ window.onload = function() {
       
       roomDataString += "<br> Money <br>";
       
-
-//      let coins = currentState.gold.coin;
-      let bags = currentState.gold.bagmoney20;
+      if (currentState.gold != null) {
+        let coins = currentState.gold.coin;
+        let bags = currentState.gold.bagmoney20;
       
-//      roomDataString += "<br> Coins: <br>" + coins;
-      roomDataString += "<br> Bags: <br>" + bags;
-      
+        roomDataString += "<br> Coins: <br>" + coins;
+        roomDataString += "<br> Bags: <br>" + bags;
+      }
       roomData.innerHTML = roomDataString;
       
       // Setting up LOG data
@@ -299,7 +299,7 @@ function parseJsonSafely(json) {
   var parsedObject;
   try {
       parsedObject = JSON.parse(json);
-      console.log(parsedObject.exits[0])
+      console.log(parsedObject);
   } catch (e) {
     console.log('cant parse it');
   }
