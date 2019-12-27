@@ -65,27 +65,29 @@
 	  	)
 		 )
 		 (json/write-str 
-		 				;println 
-		 							(conj {} [:name (:name @*current-room*)] 
-		 																					[:desc (:desc @*current-room*)] 
-		 																					[:exits (keys @(:exits @*current-room*))]
-		 																					[:inhabitants  ( for
-		 																									[x 
-		 																									(filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
-		 																									]
-		 																									(conj {} [ :id (:id x) ] [:name (:name x)])
-
-		 																									)
-		 																					]
-		 																					;[:maniacs @(:maniacs @*current-room*) ]
-		 																					[:playing   (doseq [namePlayers PlayingPlayers]
-		         														( conj {} 
-		         																				[:namePlayer1 (namePlayers :namePlayer1)] 
-		         																				[:namePlayer2 (namePlayers :namePlayer2)])
-		       														)]
-		 																					[:items @(:items @*current-room*)]
-		 																					[:gold @(:gold @*current-room*)]
-		 												)  
+		 	(conj {} 
+		 		[:your_id *player-id*]
+		 		[:your_name *player-name*]
+		 		[:name (:name @*current-room*)] 
+		 		[:desc (:desc @*current-room*)] 
+		 		[:exits (keys @(:exits @*current-room*))]
+		 		[:inhabitants  
+		 			(for [x (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)]
+		 				(conj {} [ :id (:id x) ] [:name (:name x)])
+		 			)
+		 		]
+		 	;[:maniacs @(:maniacs @*current-room*) ]
+		 		[:playing   
+		 			(doseq [namePlayers PlayingPlayers]
+		       	(conj {} 
+		        	[:namePlayer1 (namePlayers :namePlayer1)] 
+		         	[:namePlayer2 (namePlayers :namePlayer2)]
+		        )
+		      )
+		    ]
+		 		[:items @(:items @*current-room*)]
+		 		[:gold @(:gold @*current-room*)]
+		 	)  
   	)
   )
 )
