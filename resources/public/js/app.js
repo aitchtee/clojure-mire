@@ -17,7 +17,7 @@ window.onload = function() {
   var inhabitantsList = document.getElementById('inhabitantsList');
   var roomData = document.getElementById('roomData');
   var logData = document.getElementById('logData');
-
+  var grabButton = document.getElementById('grabButton');
 
   var socket;
 
@@ -41,7 +41,6 @@ window.onload = function() {
 
         openBtn.style.background = "#4a4a4a";
         closeBtn.style.background = "#ffe6cc";
-
         
         var uri = "ws://" + location.host + location.pathname;
         uri = uri.substring(0, uri.lastIndexOf('/'));
@@ -177,6 +176,7 @@ window.onload = function() {
       let navigationButtons = [northButton, westButton, eastButton, southButton];
       for (i in navigationButtons)
         navigationButtons[i].style.color = "#4a4a4a";
+        grabButton.style.visibility="hidden";
         
       // set the nav btns
       let exits = currentState.exits;
@@ -212,7 +212,16 @@ window.onload = function() {
       }
       roomData.innerHTML = roomDataString;
       
+      // Setting up LOG data
       setUpLogData();
+      
+      // Setting up grab button
+      if (currentState.items.length>0) {
+        let stuffName = currentState.items[0];
+        
+        grabButton.innerHTML = stuffName;
+        grabButton.style.visibility = "visible";        
+      }
     }
     
    function setUpLogData() {

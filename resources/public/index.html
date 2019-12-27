@@ -85,6 +85,19 @@
       visibility: hidden;
     }
     
+    #grabButton {
+      width: 25%;
+      height: 25%;
+      
+      margin: 2% 1%;
+      visibility: hidden;
+      background-color: #00cc66;
+      color: white;
+      
+      font-family: Arial;
+      font-size: 15;
+    }
+    
 /*    LOG  */
     #logView { 
       display: flex; 
@@ -157,6 +170,28 @@
       background-color: #52af96;
     }
     
+/*    #grabbers {*/
+/*      display: flex;*/
+/*      width: 15%;*/
+/*      height: 10%;*/
+/*      */
+/*      background-color: yellow;*/
+/*      float: left;*/
+/*    }*/
+    #grabFirst {
+      
+      
+    }
+    
+    .grabbers {
+      width: 10%;
+      height: 10%;
+      
+      margin: 10px;
+      background-color: yellow;
+      display: inline;
+    }
+    
   </style>
 </head>
 <body>
@@ -180,7 +215,7 @@
         <button type="button" id="toHide" disabled="disabled"></button>
         
         <button type="button" id="west" class="joystick_button"> W</button>
-        <button type="button" id="toHide" class="joystick_button">  </button>
+        <button type="button" id="grabButton" class="joystick_button">  </button>
         <button type="button" id="east" class="joystick_button"> E</button>
 
         <button type="button" id="toHide" > 0000000 </button>
@@ -192,7 +227,10 @@
       <form id="logView">
         <h2 id="logData"></h2>
       </form>
-
+      
+<!--       <div class="grabbers"> -->
+<!--         <button type="button" id="grabFirst"></button> -->
+<!--       </div> -->
 
     <div>
       <input type="text" id="input" value="" placeholder=" Type a command ..."/>
