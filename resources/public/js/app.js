@@ -121,7 +121,6 @@ window.onload = function() {
         return;
       }
       let name = grabButton.textContent;
-      alert(name);
       socket.send("grab "+name);
     };
     
@@ -180,7 +179,6 @@ window.onload = function() {
       if (e.code === "ShiftRight") {
         if (socket != undefined) {
           let name = grabButton.textContent;
-          alert(name);
           socket.send("grab "+name);
         }
         else {
