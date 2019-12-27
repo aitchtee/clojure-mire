@@ -24,7 +24,11 @@ window.onload = function() {
   let lastSentCommand;
   
   function output(style, text){
-  messages.innerHTML += "<br/><span class='" + style + "'>" + text + "</span>";
+  //messages.innerHTML += "<br/><span class='" + style + "'>" + text + "</span>";
+      if (!(text[0] === "{")) {
+        messageStack.push("> "+style+" "+text);
+        setUpLogData();
+      }
   }
 
     // Open
@@ -55,7 +59,7 @@ window.onload = function() {
             
             let message = event.data;
             
-            output("received", "<<< " + message);
+            //output("received", "<<< " + message);
             updateUI(message);
         };
 
@@ -164,7 +168,7 @@ window.onload = function() {
       }
       
       // else parcing and then push
-      let messageToPush = "> U R now a the " + currentState.name + "room";
+      let messageToPush = "> U R now a the " + currentState.name + " room";
       messageStack.push(messageToPush);
       
       // UPDATING
@@ -191,7 +195,7 @@ window.onload = function() {
       var inhabitantsString = "";
       
       for (i in inhabitants) {
-        inhabitantsString += inhabitants[i].id + "  " + inhabitants[i].name + "<br><br>";
+        inhabitantsString += inhabitants[i].id + "  " + inhabitants[i].name + "<br>";
       }
 
       inhabitantsList.innerHTML = inhabitantsString;
