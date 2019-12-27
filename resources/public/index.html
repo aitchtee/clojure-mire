@@ -9,27 +9,32 @@
       font-size: 45;
       font-family: Luminari, fantasy;
       text-align: center;
-      margin: 10%;
+      margin: 1%;
     }
   
     #joystick {
 /*      background-color: #24bdb8;*/
-      width: 25vw;
-      height: 25vw;
-      margin: 10% auto;
+      position: -webkit-sticky;
+      position: sticky;
+      top: 1%;
+      width: 20vw;
+      height: 20vw;
+      float: right;
+      /*margin: 10% auto;*/
     }
     
     .joystick_button {
-      width: 25%;
-      height: 25%;
+      font-size: 20px;
+      text-align: center;
+
+      width: 20%;
+      height: 20%;
       
-      margin: 2% 1%;
+      margin: 4% 3%;
       
       background-color: #4a4a4a;
       color: white;
       border: none;
-      
-      font-size: 20;
       
       font-family: Arial;
     }
@@ -43,28 +48,39 @@
     }
   
     #input {
-      width: 70%;
-      height: 4%;
+      position: -webkit-sticky;
+      position: sticky;
+      position: fixed;
+      top: 67%;
+      width: 40%;
+      height: 10%;
       margin: 10% auto;
+      font-size: 25px;
       
-      display: block;
+      display: inline-block;
       background: #4a4a4a;
       color: white;
     }
     
-    .controlButtons: after {
+/*    .controlButtons: after {
       align-items: right;
       content: "";
       clear: both;
       display: table;
     }
-    
+*/    
     .controlButtons button {
       
-      height: 5%;
+      position: -webkit-sticky;
+      position: sticky;
+      position: relative;
+      top: 26%;
+      bottom: -425px;
+      left: 40%;
+      height: 9%;
       padding: 8px 24px;
       
-      margin: 3%;
+      margin: 1%;
       display: table;
       
       background-color: #4a4a4a;
@@ -75,47 +91,54 @@
       
       font-family: Arial;
       text-align: center;
-      
       cursor: pointer;
-      
-      float: left;
-      
+      float: left;      
     }
-    
+    .out{
+      position: fixed;
+      font-size: 20px;
+      /*background-color: #85f26d;*/
+      resize: none;
+    }
   </style>
 </head>
 <body>
-  <h1> Good MUD </h1>
-  
+  <h1 id="your_info"> START </h1>
+    
     <form id="joystick">
       <button type="button" id="toHide" disabled="disabled"></button>
-      <button type="button" id="north" class="joystick_button"> N</button>
+      <button type="button" id="north" class="joystick_button">N</button>
       <button type="button" id="toHide" disabled="disabled"></button>
       
-      <button type="button" id="west" class="joystick_button"> W</button>
+      <button type="button" id="west" class="joystick_button">W</button>
       <button type="button" id="toHide" class="joystick_button">  </button>
-      <button type="button" id="east" class="joystick_button"> E</button>
+      <button type="button" id="east" class="joystick_button">E</button>
 
       <button type="button" id="toHide" > 0000000 </button>
-      <button type="button" id="south" class="joystick_button"> S</button>
+      <button type="button" id="south" class="joystick_button">S</button>
       <button type="button" id="toHide" > 0000000</button>
     </form>
     
-    
     <div>
-      <input type="text" id="input" value="" placeholder=" Type a command ..."/>
-    </div>
+      <textarea id="out" rows="17" cols="80" name="out" class="out" disabled="true" spellcheck="false"></textarea>
+</div>
+
+
     
-    <div class="controlButtons">
-      <button type="button" id="open">Start the game!</button>
-      <button type="button" id="send">Send</button>
-      <button type="button" id="close">Give up!</button>
-      <br><br><br>
+
+    <div>
+      <input type="text" id="input" class="inputMsg" placeholder=" Type a command ...">
     </div>
 
 
-  
-  
+              <div class="controlButtons">
+      <button type="button" id="send">Send</button>
+      <button type="button" id="open">Start the game!</button>
+      <!-- <button type="button" id="close">Give up!</button> -->
+    </div>
+      
+
+
   <div id="messages"></div>
   <script src="js/app.js"></script>
 </body>
