@@ -8,10 +8,10 @@
         [server.socket :only [create-server]]
         [clojure.core.async :only [thread-call]]
         ;[clj-tcp.client]
-        
-			) 						
 
-	(:import 
+			)
+
+	(:import
 		(java.lang String Thread)
 		(java.net InetAddress ServerSocket  Socket SocketException)
     (java.io InputStreamReader OutputStream  PrintWriter StringReader StringWriter IOException PipedInputStream PipedOutputStream)
@@ -32,10 +32,10 @@
   ; (:gen-class)
   (:use [clojure.java.io :only [reader writer]]
         [server.socket :only [create-server]])
- 	
+
  )
 
-  
+
 (def port (int 3335))
 
 
@@ -57,7 +57,7 @@
 		)
 		; (if (= (@connected_name_channel info2) 0)
 		; 	(println (info :name) " -> " @(info :money) " gold.")
-		; )		
+		; )
 		(def all-money (conj all-money @(info :money)))
 	)
 	(def max-money (apply max all-money))
@@ -176,13 +176,13 @@
 				(when (not (complete-message (chars-to-string @outp)))
 					(Thread/sleep 10)
 					; (println (not (complete-message (chars-to-string @outp))))
-					(println "->" (chars-to-string @outp) "<-") 
+					(println "->" (chars-to-string @outp) "<-")
 					(recur)
 				)
 			)
 			(async/send! channel (chars-to-string @outp))
 		)
-		(Thread/sleep 10)					
+		(Thread/sleep 10)
 	)
 )
 
@@ -194,7 +194,7 @@
 ; 		(doseq [elem  @connections]
 ; 			(do
 ; 				(println elem)
-; 			)					
+; 			)
 ; 		)
 ; 	)
 ; 	(recur)
@@ -203,12 +203,12 @@
 (def websocket-callbacks
   "WebSocket callback functions"
   {
-  	:on-open 
+  	:on-open
   		(fn [channel] ;; When socket connection opens
   			(dosync
 			  	(let	[
 	  	 						ins  				(PipedInputStream.)
-	  	 						pip_writer 	(PipedOutputStream. ins) 	
+	  	 						pip_writer 	(PipedOutputStream. ins)
 	        				pip_reader 	(PipedInputStream.)
 	        				outs  			(PipedOutputStream. pip_reader)
         				]
@@ -223,7 +223,7 @@
 									)
 								)))
 							)
-						  (dosync 
+						  (dosync
 						  	(commute connections conj  {channel [pip_writer  pip_reader]})
 						  )
 						  (println "New web connection")
@@ -233,12 +233,12 @@
   				)
   			)
   		)
-  	:on-close   
+  	:on-close
   		(fn [ch {:keys [code reason]}]
     		(do
-    		 	(println "close code:" code "reason:" reason)		
+    		 	(println "close code:" code "reason:" reason)
     			(dosync
-    				(if (@connections ch) 
+    				(if (@connections ch)
     					(let [
     									writer (first (@connections ch))
     									reader (last (@connections ch))
@@ -246,13 +246,13 @@
     						(.close writer)
     						(.close reader)
     					)
-    					(println "ERROR on-close")	
-    				)				
+    					(println "ERROR on-close")
+    				)
     			)
     		)
     	)
-  	:on-message 
-  		(fn [ch m] 	
+  	:on-message
+  		(fn [ch m]
   			(dosync
   				(if (@connections ch)
   					(let	[
@@ -288,7 +288,7 @@
 (defn -main
   ([& {:as args}]
   		(	let [
-  						port 	3335 
+  						port 	3335
   						dir 	"resources/rooms"
   					]
 		  	(add-rooms dir)
@@ -303,17 +303,17 @@
 		      (web-middleware/wrap-websocket websocket-callbacks)
 		    )
 		    (let [
-		    				host "localhost"
-		      			port "5000"	
+		    				host "192.168.43.23"
+		      			port "5000"
 		      		]
-		    	(merge {"host" host, "port" port } args) 
+		    	(merge {"host" host, "port" port } args)
 		    )
 		  )
-		  
+
 				(let [
 						 				task(
 						 					proxy [TimerTask] []
-						 						(run [] 
+						 						(run []
 						 							(do
 						 								(def finish-game? true)
 						 								(println "finish-game")
@@ -321,7 +321,7 @@
 						 							)
 						 						))
 						 			]
-						 		(. (new Timer) (schedule task (long 50000)))
+						 		(. (new Timer) (schedule task (long 500000)))
 					)
 
 

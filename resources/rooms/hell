@@ -1,3 +1,5 @@
 {:desc "Satan bowed to you."
  :exits {:north :in :south :work}
- :items #{:skull}}
+ :gold {:bagmoney20 1}
+ :items #{:skull}
+ :lock #{:turtle}}

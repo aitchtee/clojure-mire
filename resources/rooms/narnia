@@ -1,2 +1,3 @@
 {:desc "You climbed into a snowy meadow."
+:gold {:coin 2 :bagmoney20 1}
  :exits {:west :wardrobe}}

@@ -1,4 +1,5 @@
 {
     :desc "Нou can buy a ticket anywhere you want."
+    :gold {:bagmoney20 1}
     :exits {:south :platform934 :east :slating_alley}
 }
