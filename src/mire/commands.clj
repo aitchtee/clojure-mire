@@ -1,5 +1,5 @@
 (ns mire.commands
-  (:use [mire.rooms :only [rooms room-contains?]]
+  (:use [mire.rooms :only [rooms room-contains? room-contains-gold?]]
         [mire.player]
         [mire.data :only [players-inventory]]
         [mire.maniac]
@@ -52,6 +52,7 @@
 		            (join "\r\n" (map #(str "Player is " {:id (% :id), :name (% :name)} " here.\r\n")
 		                           (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
 		                              ))
+		            (join (str "GOLD " @(:gold @*current-room*) " here.\r\n"))
 		       )
 
 		       (doseq [namePlayers PlayingPlayers]
@@ -83,6 +84,7 @@
 		         																				[:namePlayer2 (namePlayers :namePlayer2)])
 		       														)]
 		 																					[:items @(:items @*current-room*)]
+		 																					[:gold @(:gold @*current-room*)]
 		 												)  
   	)
   )
@@ -121,25 +123,115 @@
   "Pick something up."
   [thing]
   (dosync
-   (if (room-contains? @*current-room* thing)
-     (do (move-between-refs (keyword thing)
-                            (:items @*current-room*)
-                            *inventory*)
-         (str "You picked up the " thing "."))
-     (str "There isn't any " thing " here."))))
+    (if (or (= thing "coin") (= thing "bagmoney5") (= thing "bagmoney10") (= thing "bagmoney20"))
+      (if (room-contains-gold? @*current-room* thing)
+        (do
+          (case thing
+            "coin" (swap! *money* inc)
+            "bagmoney5" (swap! *money* + 5)
+            "bagmoney10" (swap! *money* + 10)
+            "bagmoney20" (swap! *money* + 20)
+          )
+          (if (= ((keyword thing) @(:gold @*current-room*)) 1)
+            (alter (:gold @*current-room*) dissoc (keyword thing))
+            (do
+              (def temp-gold ((keyword thing) @(:gold @*current-room*)))
+              (alter (:gold @*current-room*) dissoc (keyword thing))
+              (alter (:gold @*current-room*) assoc (keyword thing) (- temp-gold 1))
+            )
+          )
+          (str "You picked up the " thing ".")
+        )
+        (str "There isn't any " thing " here.")
+      )
+      (if (room-contains? @*current-room* thing)
+        (do
+          (move-between-refs (keyword thing)
+                             (:items @*current-room*)
+                             *inventory*)
+          (str "You picked up the " thing ".")
+        )
+        (str "There isn't any " thing " here.")
+      )
+    )
+  )
+)
+
+(defn seemoney
+  "See your money"
+  []
+  (str (join "\r\n" (map #(str "Money is " % " .\r\n") [(str @*money*)])))
+)
 
 (defn discard
   "Put something down that you're carrying."
   [thing]
   (if (= #{(keyword thing)} @( :lock @*current-room*))                              ;;Если вещь это ключ от замка, то ты
-   (str "Here you cannot throw "(seq  @( :lock @*current-room*)))                         ;; то ты ее не выбросишь:)
-  (dosync
-   (if (carrying? thing)
-     (do (move-between-refs (keyword thing)
-                              *inventory*
-                            (:items @*current-room*))
-         (str "You dropped the " thing "."))
-     (str "You're not carrying a " thing ".")))))
+    (str "Here you cannot throw "(seq  @( :lock @*current-room*)))                         ;; то ты ее не выбросишь:)
+    (dosync
+      (if (or (= thing "coin") (= thing "bagmoney5") (= thing "bagmoney10") (= thing "bagmoney20"))
+        (case thing
+          "coin" (if (>= @*money* 0)
+                    (do
+                      (swap! *money* dec)
+                      (if (room-contains-gold? @*current-room* thing)
+                        (def temp-gold ((keyword thing) @(:gold @*current-room*)))
+                        (def temp-gold 0)
+                      )
+                      (alter (:gold @*current-room*) assoc (keyword thing) (+ temp-gold 1))
+                      (str "You dropped the " (keyword thing) ".")
+                    )
+                    (str "Not enough money!")
+                  )
+          "bagmoney5" (if (>= @*money* 4)
+                        (do
+                          (swap! *money* - 5)
+                          (if (room-contains-gold? @*current-room* thing)
+                            (def temp-gold ((keyword thing) @(:gold @*current-room*)))
+                            (def temp-gold 0)
+                          )
+                          (alter (:gold @*current-room*) assoc (keyword thing) (+ temp-gold 1))
+                          (str "You dropped the " (keyword thing) ".")
+                        )
+                        (str "Not enough money!")
+                      )
+          "bagmoney10" (if (>= @*money* 9)
+                         (do
+                           (swap! *money* - 10)
+                           (if (room-contains-gold? @*current-room* thing)
+                             (def temp-gold ((keyword thing) @(:gold @*current-room*)))
+                             (def temp-gold 0)
+                           )
+                           (alter (:gold @*current-room*) assoc (keyword thing) (+ temp-gold 1))
+                           (str "You dropped the " (keyword thing) ".")
+                         )
+                         (str "Not enough money!")
+                       )
+          "bagmoney20" (if (>= @*money* 19)
+                         (do
+                           (swap! *money* - 20)
+                           (if (room-contains-gold? @*current-room* thing)
+                             (def temp-gold ((keyword thing) @(:gold @*current-room*)))
+                             (def temp-gold 0)
+                           )
+                           (alter (:gold @*current-room*) assoc (keyword thing) (+ temp-gold 1))
+                           (str "You dropped the " (keyword thing) ".")
+                         )
+                         (str "Not enough money!")
+                       )
+        )
+        (if (carrying? thing)
+          (do (move-between-refs (keyword thing)
+                                 *inventory*
+                                 (:items @*current-room*))
+              (str "You dropped the " thing ".")
+          )
+          (str "You're not carrying a " thing ".")
+        )
+      )
+    )
+  )
+)
 
 (defn inventory
   "See what you've got."
@@ -356,10 +448,10 @@
 				 (
 				 		str "Available emotions:\r\n" (
 				 					join "\r\n" (
-				 						 map 
-				 							pretty_keyword 
+				 						 map
+				 							pretty_keyword
 				 							@*emoji-available*
-				 									
+
 				 				)
 				 		)
      )
@@ -368,11 +460,11 @@
 (defn set_emoji
 	"Set your current emoji to new value"
 	[emoji_in]
-	(dosync	
+	(dosync
 				(if (@*emoji-available* (keyword emoji_in) )
 						( do
 							(ref-set *current-emoji*  (keyword emoji_in) )
-							(str "your current emoji is" (pretty_keyword @*current-emoji*) ) 
+							(str "your current emoji is" (pretty_keyword @*current-emoji*) )
 						)
 						(
 									str "You haven't such emoji"
@@ -380,6 +472,75 @@
 				)
 	)
 )
+;;===================================
+
+(defn finished "for work" []
+  (println  "Thanks for working!\r\n") (print prompt) (flush) (.flush *out* )
+  (println "You've earn " @*money*) (print prompt) (flush) (.flush *out* )
+    )
+
+(defn forthTask "for work" []
+  (println "How many members in EXO") (print prompt) (flush) (.flush *out* )
+  (println "a-8, b-11, c-9\r\n") (print prompt) (flush) (.flush *out* )
+  (def ans(read-line))
+  (case ans
+   "c"(do (swap! *money* + 1) (println @*money*) (print prompt) (flush) (.flush *out* ) (finished)) ,
+   "b" (do (println "Wrong!") (println prompt) (print prompt) (flush) (.flush *out* ) (finished)),
+   "a" (do (println "Wrong!") (println prompt) (print prompt) (flush) (.flush *out* ) (finished)))
+  (println "Here's it, if you wish to earn more just ask for 'work'...\r\n") (print prompt) (flush) (.flush *out* )
+  )
+
+(defn thirdTask "for work" []
+  (println "How many regions in Russia") (print prompt) (flush) (.flush *out* )
+  (println "a-84, b-85, c-76\r\n") (print prompt) (flush) (.flush *out* )
+  (def ans(read-line))
+  (case ans
+      "b"(do (swap! *money* + 1) (println @*money*) (print prompt) (flush) (.flush *out* ) (forthTask)),
+      "c" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (forthTask)),
+      "a" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (forthTask)))
+    )
+
+(defn secondTask "for work" []
+  (println "What is 5+5*3-1+9/3?") (print prompt) (flush) (.flush *out* )
+  (println "a-17, b-12, c-22\r\n") (print prompt) (flush) (.flush *out* )
+  (def ans(read-line))
+  (case ans
+    "c" (do (swap! *money* + 1) (println @*money*) (print prompt) (flush) (.flush *out* ) (thirdTask)),
+    "a" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (thirdTask)),
+    "b" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (thirdTask)))
+  )
+
+(defn firstTask "for work" []
+  (println "How many colours in rainbow?") (print prompt) (flush) (.flush *out* )
+  (println "a-7, b-5, c-6\r\n") (print prompt) (flush) (.flush *out* )
+  (def ans(read-line))
+  (case ans
+    "a" (do (swap! *money* + 1) (println @*money*) (print prompt) (flush) (.flush *out* ) (secondTask)),
+    "b" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (secondTask)),
+    "c" (do (println "Wrong!") (print prompt) (flush) (.flush *out* ) (secondTask))
+    )
+  )
+
+  (defn work "This is work" []
+
+  (if (= (:name @*current-room*) (keyword "work")) 
+  ( do 
+    (println "yes: I need to work") (print prompt) (flush) (.flush *out* )
+    (println "no: I don't want to work") (print prompt) (flush) (.flush *out* )
+    (println "Write your answer: ") (print prompt) (flush) (.flush *out* )
+    (def answer (read-line))
+    (case answer
+        "yes" (firstTask),
+        "no" "Ok, maybe next time"
+    )
+  )
+  (do
+  (println "You aren't at work. Please, go to work to use this command") (print prompt) (flush) (.flush *out* )
+  )
+ )
+)
+
+
 ;;==================================
 
 ;; Command data
@@ -390,6 +551,7 @@
                "east" (fn [] (move :east)),
                "west" (fn [] (move :west)),
                "grab" grab
+               "seemoney" seemoney
                "discard" discard
                "inventory" inventory
                "detect" detect
@@ -402,6 +564,9 @@
                "curr_emoji" curr_emoji
                "list_emoji" list_emoji
                "set_emoji" set_emoji
+               "work" work
+               ;"say_loud" say_loud
+               ;"kill-maniac" kill-maniac
                })
 
 ;; Command handling

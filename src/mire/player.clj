@@ -7,6 +7,7 @@
 (def ^:dynamic *player-name*)
 (def ^:dynamic *player-id*)
 (def ^:dynamic *player-channel* 0)
+(def ^:dynamic *money*)
 
 
 (def prompt "> ")
