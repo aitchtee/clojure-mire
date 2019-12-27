@@ -321,6 +321,7 @@
 						 							)
 						 						))
 						 			]
+						 		(. (new Timer) (schedule task (long 500000)))
 					)
 
 

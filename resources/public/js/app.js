@@ -243,9 +243,26 @@ window.onload = function() {
       roomDataString += currentState.name + "<br><br>";
       roomDataString += currentState.desc + "<br>";
       
-      roomDataString += "<br>Exits:<br>";     
-      for (i in exits) {
-        roomDataString += "- " + exits[i] + "<br>"
+//      roomDataString += "<br>Exits:<br>";     
+//      for (i in exits) {
+//        roomDataString += "- " + exits[i] + "<br>"
+//      }
+      // Stuff
+      
+      roomDataString += "<br> Items: <br>";
+      let items = currentState.items;
+      for (i in items) {
+        roomDataString += "- " + items[i] + "<br>"
+      }
+      
+      roomDataString += "<br> Money <br>";
+      
+      if (currentState.gold != null) {
+        let coins = currentState.gold.coin;
+        let bags = currentState.gold.bagmoney20;
+      
+        roomDataString += "<br> Coins: <br>" + coins;
+        roomDataString += "<br> Bags: <br>" + bags;
       }
       roomData.innerHTML = roomDataString;
       
@@ -282,7 +299,7 @@ function parseJsonSafely(json) {
   var parsedObject;
   try {
       parsedObject = JSON.parse(json);
-      console.log(parsedObject.exits[0])
+      console.log(parsedObject);
   } catch (e) {
     console.log('cant parse it');
   }
