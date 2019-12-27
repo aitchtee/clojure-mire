@@ -10,7 +10,7 @@
       font-size: 45;
       font-family: Luminari, fantasy;
       text-align: center;
-      margin: 5%;
+      margin: 4%;
     }
 
 /*    Top  */
@@ -28,7 +28,7 @@
     
     #inhabitantsList {
       color: white;
-      font-family: Arial;
+      font-family: Courier;
       font-size: 18;
     }
     
@@ -47,14 +47,14 @@
     
     #roomData {
       color: white;
-      font-family: Arial;
+      font-family: Courier;
       font-size: 18;
     }
   
 /*  joystick*/
     #joystick {
-      width: 25vw;
-      height: 25vw;
+      width: 22vw;
+      height: 22vw;
 /*      margin: 10% auto;*/
       float:left;
       margin-right: 5%;
@@ -84,11 +84,31 @@
       margin: 2% 1%;
       visibility: hidden;
     }
+    
+/*    LOG  */
+    #logView { 
+      display: flex; 
+      width: 50%;
+      height: 15%;
+      margin: 5% 10%;
+      
+      background-color: #4a4a4a;
+      padding: 15px;
+
+    }
+    
+    #logData {
+      color: white;
+      font-family: Courier;
+      font-size: 16;
+    }
+    
+    
   
     #input {
       width: 80%;
       height: 5%;
-      margin: 10% auto;
+      margin: 5% auto;
       
       display: block;
       background: #4a4a4a;
@@ -166,7 +186,13 @@
         <button type="button" id="south" class="joystick_button"> S</button>
         <button type="button" id="toHide" > 0000000</button>
       </form>
-    
+      
+      
+      <form id="logView">
+        <h2 id="logData"></h2>
+      </form>
+
+
     <div>
       <input type="text" id="input" value="" placeholder=" Type a command ..."/>
     </div>

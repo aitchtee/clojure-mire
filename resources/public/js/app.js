@@ -1,4 +1,8 @@
+
+var messageStack = [];
+
 window.onload = function() {
+  
   var input = document.getElementById('input');
   var openBtn = document.getElementById('open');
 //  var sendBtn = document.getElementById('send');
@@ -12,7 +16,7 @@ window.onload = function() {
   
   var inhabitantsList = document.getElementById('inhabitantsList');
   var roomData = document.getElementById('roomData');
-
+  var logData = document.getElementById('logData');
 
 
   var socket;
@@ -48,8 +52,8 @@ window.onload = function() {
         };
 
         socket.onmessage = function(event) {
-          
-            var message = event.data;            
+            
+            let message = event.data;
             
             output("received", "<<< " + message);
             updateUI(message);
@@ -149,10 +153,19 @@ window.onload = function() {
       let transformedData = data.substring(0,data.length-3); 
       
       let currentState = parseJsonSafely(transformedData);
+      
+      // if not json
       if (currentState == null) {
         console.log("got null");
+        // if not json, just a message, add directly to stack
+        messageStack.push("> " + data);
+        setUpLogData();
         return;
       }
+      
+      // else parcing and then push
+      let messageToPush = "> U R now a the " + currentState.name + "room";
+      messageStack.push(messageToPush);
       
       // UPDATING
       
@@ -193,9 +206,24 @@ window.onload = function() {
       for (i in exits) {
         roomDataString += "- " + exits[i] + "<br>"
       }
-
       roomData.innerHTML = roomDataString;
+      
+      setUpLogData();
     }
+    
+   function setUpLogData() {
+    // Setting up LOG data
+      var logDataString = "";
+      
+      for (var i = 7; i >= 1; i--) {
+        if (messageStack.length-i >= 0){
+          logDataString += messageStack[messageStack.length-i] + "<br>";
+        }
+      }
+      
+      logData.innerHTML = logDataString;
+
+  }
     
 };
 
