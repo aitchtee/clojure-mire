@@ -9,9 +9,11 @@
            {:name (keyword (.getName file))
             :desc (:desc room)
             :exits (ref (:exits room))
+            :gold (ref (:gold room))
             :items (ref (or (:items room) #{}))
             :lock (ref (or (:lock room) #{}))
-            :inhabitants (ref #{})}})))
+            :inhabitants (ref #{})
+            :maniacs (ref #{})}})))
 
 (defn testikitty
   []
@@ -52,3 +54,6 @@
   [room lock1]
   (@(:lock room) (keyword lock1)))
 
+(defn room-contains-gold?
+  [room thing]
+  (contains? @(:gold room) (keyword thing)))

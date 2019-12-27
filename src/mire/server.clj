@@ -1,24 +1,102 @@
 (ns mire.server
   (:use [mire.player]
+        [mire.data :only [idPlayer newPlayer players-inventory]]
+  						[mire.emojiList]
         [mire.commands :only [discard look execute]]
         [mire.rooms :only [add-rooms rooms]])
-  (:use [clojure.java.io :only [reader writer]]
-        [server.socket :only [create-server]]))
+  (:use [clojure.java.io ];:only [reader writer]]
+        [server.socket :only [create-server]]
+        [clojure.core.async :only [thread-call]]
+        ;[clj-tcp.client]
+        
+			) 						
 
-(defn- cleanup []
+	(:import 
+		(java.lang String Thread)
+		(java.net InetAddress ServerSocket  Socket SocketException)
+    (java.io InputStreamReader OutputStream  PrintWriter StringReader StringWriter IOException PipedInputStream PipedOutputStream)
+
+  )
+(:import (java.util TimerTask Timer))
+  ;(import java.lang.String)
+
+  (:require
+    [immutant.web             :as web]
+    [immutant.web.async       :as async]
+    [immutant.web.middleware  :as web-middleware]
+    [compojure.route          :as route]
+    [environ.core             :refer (env)]
+    [compojure.core           :refer (ANY GET defroutes)]
+    [ring.util.response       :refer (response redirect content-type)]
+    )
+  ; (:gen-class)
+  (:use [clojure.java.io :only [reader writer]]
+        [server.socket :only [create-server]])
+ 	
+ )
+
+  
+(def port (int 3335))
+
+
+(def money-all-players [])
+
+(def finish-game? false)
+
+(defn finish-game
+	[]
+	; (println @player-streams)
+	(println "finish-game")
+	(def all-money ())
+	(doseq [info players-inventory]
+		(doseq [info2 players-inventory]
+			(if (not= (@connected_name_channel info2) 0)
+				(async/send! (@connected_name_channel (info2 :name)) (str (info :name) " -> " @(info :money) " gold."))
+				(println (info :name) " -> " @(info :money) " gold.")
+			)
+		)
+		; (if (= (@connected_name_channel info2) 0)
+		; 	(println (info :name) " -> " @(info :money) " gold.")
+		; )		
+		(def all-money (conj all-money @(info :money)))
+	)
+	(def max-money (apply max all-money))
+	(def winers (filter #(= @(% :money) max-money) players-inventory))
+	(doseq [info players-inventory]
+		(doseq [winer winers]
+			(if (not= (@connected_name_channel info) 0)
+				(async/send! (@connected_name_channel (info :name)) (str (winer :name) " is WINER!!!"))
+				(println (winer :name) " is WINER!!!")
+			)
+		)
+	)
+)
+
+(defn- cleanup
+  [namePlayer]
   "Drop all inventory and remove player from room and player list."
   (dosync
-   (doseq [item @*inventory*]
-     (discard item))
-   (commute player-streams dissoc *player-name*)
-   (commute (:inhabitants @*current-room*)
-            disj *player-name*)))
+  (doseq [item @*inventory*]
+   	(discard item))
+  (commute player-streams dissoc *player-name*)
+  (commute (:inhabitants @*current-room*) disj *player-name*)))
 
 (defn- get-unique-player-name [name]
+	(def name_ name)
   (if (@player-streams name)
-    (do (print "That name is in use; try again: ")
-        (flush)
-        (recur (read-line)))
+  	(if (= *player-channel* 0)
+	    (do (print "That name is in use; try again: ")
+	        (flush)
+	        (recur (read-line))
+	    )
+	    (while (@player-streams name_)
+		    (do
+			    (async/send! *player-channel* "That name is in use; try again: ")
+			    (println "\nWhat is your name? ") (print prompt) (flush) (.flush *out* )
+		      (def name_ (read-line))
+		    )
+	    )
+  	)
     name))
 
 (defn- mire-handle-client [in out]
@@ -28,28 +106,226 @@
 
     ;; We have to nest this in another binding call instead of using
     ;; the one above so *in* and *out* will be bound to the socket
-    (print "\nWhat is your name? ") (flush)
-    (binding [*player-name* (get-unique-player-name (read-line))
+    (print "\nWhat is your name? ") (print prompt) (flush) (.flush *out* )
+
+    (def player-name (get-unique-player-name (read-line)) )    ;; Устанавливаю переменной player-name имя игрока, введеное в консоли
+
+    (newPlayer idPlayer player-name)
+    ; (let [*in* System/out] (println player-name) )
+    (def id idPlayer)
+    (def player-inventory ((first (filter #(= (% :id) id) players-inventory)) :inventory))
+    (def player-money ((first (filter #(= (% :id) id) players-inventory)) :money))
+
+    (binding [
+              *player-id*  idPlayer
+              *player-name*  player-name
               *current-room* (ref (@rooms :start))
-              *inventory* (ref #{})]
+              *inventory* player-inventory
+              *money* player-money
+              *current-emoji* (ref :no_emotion)
+              *emoji-available* (ref #{:no_emotion :sad})]
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)
-       (commute player-streams assoc *player-name* *out*))
+       (commute player-streams assoc *player-name* *out*)
+       (commute connected_name_channel assoc *player-name* *player-channel*)
+       ;(println "channel = " *player-channel*)
+      )
 
       (println (look)) (print prompt) (flush)
 
       (try (loop [input (read-line)]
              (when input
-               (println (execute input))
+             	 (if (not finish-game?)
+	               (println (execute input))
+	               (finish-game)
+             	 )
                (.flush *err*)
                (print prompt) (flush)
+               (.flush *out* )
                (recur (read-line))))
-           (finally (cleanup))))))
+           (finally (cleanup *player-name*))))))
 
+
+;==server=functions
+; WEB SOCKET CONNECTION HANDLER
+(defn chars-to-string
+[chars]
+"translate chars vector to String"
+(apply str (map char (reverse (into [] chars) )))
+)
+
+(defn complete-message
+	[msg]
+	"true if messege is complete"
+	(do
+		(= (last (butlast msg)) (first prompt))
+	)
+)
+
+(defn send-messeges-to-client
+	[channel reader]
+	(do
+		(let  [outp (ref '())]
+			(loop []
+				; (println (not (complete-message (chars-to-string @outp))))
+				(while (not= (.available reader) 0)
+					(dosync
+						(commute outp conj  (.read reader))
+					)
+				)
+				(when (not (complete-message (chars-to-string @outp)))
+					(Thread/sleep 10)
+					; (println (not (complete-message (chars-to-string @outp))))
+					(println "->" (chars-to-string @outp) "<-") 
+					(recur)
+				)
+			)
+			(async/send! channel (chars-to-string @outp))
+		)
+		(Thread/sleep 10)					
+	)
+)
+
+; (defn send-messeges-to-clients
+; 	[]
+; 	"send messeges to clients"
+; 	(dosync
+; 		(println "start to send messages to clients")
+; 		(doseq [elem  @connections]
+; 			(do
+; 				(println elem)
+; 			)					
+; 		)
+; 	)
+; 	(recur)
+; )
+
+(def websocket-callbacks
+  "WebSocket callback functions"
+  {
+  	:on-open 
+  		(fn [channel] ;; When socket connection opens
+  			(dosync
+			  	(let	[
+	  	 						ins  				(PipedInputStream.)
+	  	 						pip_writer 	(PipedOutputStream. ins) 	
+	        				pip_reader 	(PipedInputStream.)
+	        				outs  			(PipedOutputStream. pip_reader)
+        				]
+        		(do
+							(.start (Thread. (fn[]
+								(let [
+												in 	ins
+												out outs
+											]
+									(binding [*player-channel* channel]
+										(mire-handle-client in out)
+									)
+								)))
+							)
+						  (dosync 
+						  	(commute connections conj  {channel [pip_writer  pip_reader]})
+						  )
+						  (println "New web connection")
+						  ;Start to send messages to client
+						  (send-messeges-to-client channel pip_reader)
+   					)
+  				)
+  			)
+  		)
+  	:on-close   
+  		(fn [ch {:keys [code reason]}]
+    		(do
+    		 	(println "close code:" code "reason:" reason)		
+    			(dosync
+    				(if (@connections ch) 
+    					(let [
+    									writer (first (@connections ch))
+    									reader (last (@connections ch))
+    								]
+    						(.close writer)
+    						(.close reader)
+    					)
+    					(println "ERROR on-close")	
+    				)				
+    			)
+    		)
+    	)
+  	:on-message 
+  		(fn [ch m] 	
+  			(dosync
+  				(if (@connections ch)
+  					(let	[
+  					 				pip_writer  (first (@connections ch))
+  					 				reader 			(last (@connections ch))
+            			]
+							; (if (includes? m "say")
+							; 	(println m)
+							; )
+	       (if (not= m "refresh")
+ 								(do
+							  	(. pip_writer write (.getBytes (str m "\n")))
+							  	(. pip_writer flush)
+							  	(send-messeges-to-client ch reader)
+	 							)
+		 						(do
+	       					(.start (Thread. (fn [] (send-messeges-to-client ch reader))))
+			 					)
+				 			)
+       )
+        		(println "error sending to client")
+       		)
+  			)
+  		)
+	}
+)
+
+(defroutes routes
+  (GET "/" {c :context} (redirect (str c "/index.html")))
+  (route/resources "/")
+)
+;=================
 (defn -main
-  ([port dir]
-     (add-rooms dir)
-     (defonce server (create-server (Integer. port) mire-handle-client))
-     (println "Launching Mire server on port" port))
-  ([port] (-main port "resources/rooms"))
-  ([] (-main 3333)))
+  ([& {:as args}]
+  		(	let [
+  						port 	3335 
+  						dir 	"resources/rooms"
+  					]
+		  	(add-rooms dir)
+		    (defonce server (create-server (Integer. port) mire-handle-client))
+		    (println "Launching Mire server on port" port)
+		  )
+		  (web/run
+		   	(-> routes
+		     	(web-middleware/wrap-session {:timeout 20})
+		     	;; wrap the handler with websocket support
+		      ;; websocket requests will go to the callbacks, ring requests to the handler
+		      (web-middleware/wrap-websocket websocket-callbacks)
+		    )
+		    (let [
+		    				host "localhost"
+		      			port "5000"	
+		      		]
+		    	(merge {"host" host, "port" port } args) 
+		    )
+		  )
+		  
+				(let [
+						 				task(
+						 					proxy [TimerTask] []
+						 						(run [] 
+						 							(do
+						 								(def finish-game? true)
+						 								(println "finish-game")
+						 								(finish-game)
+						 							)
+						 						))
+						 			]
+						 		(. (new Timer) (schedule task (long 50000)))
+					)
+
+
+  )
+  ;([port] (-main port "resources/rooms"))
+  ;([] (-main 3333))
+  )
