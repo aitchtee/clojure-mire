@@ -1,0 +1,253 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>WebSocket Demo</title>
+  
+  <style>
+    
+/*    header*/
+    h1 {
+      font-size: 45;
+      font-family: Luminari, fantasy;
+      text-align: center;
+      margin: 3%;
+    }
+
+/*    Top  */
+    #inhabitantsView {
+      float:left;
+      width: 20vw;
+/*      height: 20vw;*/
+      margin-left: 10%;
+      margin-right: 5%;
+      background-color: #4a4a4a;
+      
+      padding: 4px;
+      
+    }
+    
+    #inhabitantsList {
+      color: white;
+      font-family: Courier;
+      font-size: 15;
+    }
+    
+    
+    #roomView {
+      float: left;
+      
+      width: 20vw;
+/*      height: 20vw;*/
+      margin-right: 5%;
+
+      background-color: #4a4a4a;
+      padding: 5px;
+
+    }
+    
+    #roomData {
+      color: white;
+      font-family: Courier;
+      font-size: 15;
+    }
+  
+/*  joystick*/
+    #joystick {
+      width: 20vw;
+      height: 20vw;
+/*      margin: 10% auto;*/
+      float:left;
+      margin-right: 5%;
+      
+    }
+    
+    .joystick_button {
+      width: 25%;
+      height: 25%;
+      
+      margin: 1% 1%;
+      
+      background-color: #4a4a4a;
+      color: #4a4a4a;
+      border: none;
+      
+      font-size: 20;
+      
+      font-family: Arial;
+      cursor: pointer;
+    }
+    
+    #toHide {
+      width: 25%;
+      height: 25%;
+      
+      margin: 2% 1%;
+      visibility: hidden;
+    }
+    
+    #grabButton {
+      width: 25%;
+      height: 25%;
+      
+      margin: 2% 1%;
+      visibility: hidden;
+      background-color: #00cc66;
+      color: white;
+      
+      font-family: Arial;
+      font-size: 15;
+    }
+    
+/*    LOG  */
+    #logView { 
+      display: flex; 
+      width: 50%;
+      height: 15%;
+      margin: 2% 10%;
+      
+      background-color: #4a4a4a;
+      padding: 15px;
+
+    }
+    
+    #logData {
+      color: white;
+      font-family: Courier;
+      font-size: 15;
+    }
+    
+    
+  
+    #input {
+      width: 80%;
+      height: 5%;
+      margin: 1% auto;
+      
+      display: block;
+      background: #4a4a4a;
+      color: white;
+      
+      font-family: Courier;
+      font-size: 16;
+    }
+    
+    .controlButtons:  {
+/*      align-items: right;*/
+/*      content: "";*/
+/*      clear: both;*/
+/*      display: table;*/
+
+/*      display: block;*/
+/*      margin: 10% auto;*/
+    }
+    
+    .controlButtons button {
+      
+      height: 5%;
+      padding: 8px 24px;
+      
+/*      margin: %;*/
+      display: table;
+      
+      background-color: #4a4a4a;
+      color: white;
+      border: none;
+      
+      font-size: 20;
+      
+      font-family: Arial;
+      text-align: center;
+      
+      cursor: pointer;
+      float: right;
+      
+      margin: 2% 10%;
+    
+      
+    }
+    
+    #open {
+      background-color: #52af96;
+    }
+    
+/*    #grabbers {*/
+/*      display: flex;*/
+/*      width: 15%;*/
+/*      height: 10%;*/
+/*      */
+/*      background-color: yellow;*/
+/*      float: left;*/
+/*    }*/
+    #grabFirst {
+      
+      
+    }
+    
+    .grabbers {
+      width: 10%;
+      height: 10%;
+      
+      margin: 10px;
+      background-color: yellow;
+      display: inline;
+    }
+    
+  </style>
+</head>
+<body>
+  <h1> Good MUD </h1>
+  
+  
+      <form id="inhabitantsView">
+        <h2 style="color: white; font-family: Helvetica; font-style: underline;">Inhabitants </h2>
+        <h2 id="inhabitantsList"></h2>
+      </form>
+      
+      <form id="roomView">
+        <h2 style="color: white; font-family: Helvetica; font-style: underline;"> Room </h2>
+        <h2 id="roomData"></h2>
+      </form>
+
+    
+      <form id="joystick">
+        <button type="button" id="toHide" disabled="disabled"></button>
+        <button type="button" id="north" class="joystick_button"> N</button>
+        <button type="button" id="toHide" disabled="disabled"></button>
+        
+        <button type="button" id="west" class="joystick_button"> W</button>
+        <button type="button" id="grabButton" class="joystick_button">  </button>
+        <button type="button" id="east" class="joystick_button"> E</button>
+
+        <button type="button" id="toHide" > 0000000 </button>
+        <button type="button" id="south" class="joystick_button"> S</button>
+        <button type="button" id="toHide" > 0000000</button>
+      </form>
+      
+      
+      <form id="logView">
+        <h2 id="logData"></h2>
+      </form>
+      
+<!--       <div class="grabbers"> -->
+<!--         <button type="button" id="grabFirst"></button> -->
+<!--       </div> -->
+
+    <div>
+      <input type="text" id="input" value="" placeholder=" Type a command ..."/>
+    </div>
+    
+    <div class="controlButtons">
+      <button type="button" id="open">Start the game</button>
+<!--       <button type="button" id="send">Send</button> -->
+      <button type="button" id="close">Give up!</button>
+      <br><br><br>
+    </div>
+      
+
+
+  
+  
+  <div id="messages"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
