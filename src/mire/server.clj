@@ -123,7 +123,7 @@
               *inventory* player-inventory
               *money* player-money
               *current-emoji* (ref :no_emotion)
-              *emoji-available* (ref #{:no_emotion :sad})]
+              *emoji-available* (ref emoji)]
       (dosync
        (commute (:inhabitants @*current-room*) conj *player-name*)
        (commute player-streams assoc *player-name* *out*)

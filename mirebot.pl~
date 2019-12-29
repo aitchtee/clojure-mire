@@ -26,12 +26,12 @@ filter_codes([H|T1], T2) :-
   char_code(C, H),
   member(C, ['(', ')', ':']),
   filter_codes(T1, T2).
-filter_codes([H|T1], [F|T2]) :-
+filter_codes([H|T1], [F|T2]) :- 
   code_type(F, to_lower(H)),
   filter_codes(T1, T2).
 
 
-halprocess(Stream) :-
+process(Stream) :-
   exit([Direction|_]),
   format(atom(Command), 'move ~w~n', [Direction]),
   write(Command),
@@ -53,10 +53,10 @@ loop(Stream) :-
   sleep(1),
   process(Stream),
   loop(Stream).
-
+ 
  main :-
    setup_call_cleanup(
      tcp_connect(localhost:3333, Stream, []),
      loop(Stream),
      close(Stream)).
-
+     

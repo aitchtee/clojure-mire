@@ -1,4 +1,4 @@
 {
     :desc "Нou can buy a ticket anywhere you want."
-    :exits {:south :platform934 :east :slating_alley}
+    :exits {:south :platform934 :east :slanting_alley}
 }
