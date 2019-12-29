@@ -3,7 +3,10 @@
   (:use [mire.emojiList]
   						[mire.player]
   						[mire.utilities]
-  						[mire.data])
+  						[mire.data]
+  				 [clojure.string :only [join]]
+  	)			 
+
 )  
 
 (def maniacs (ref {}))
@@ -79,8 +82,12 @@
   ;;(println (target-room @rooms))
 
   (dosync 
-  			(alter ( :maniacs (target-room @rooms) ) conj  target-emotion 	)   ;; write maniac into room
+  			( str  
+  						"You gen maniac with emotion "
+  						(alter ( :maniacs (target-room @rooms) ) conj  target-emotion 	)    ;; write maniac into room
   			;(say_loud "maniac is appear") 
+  						"\r\n"
+  			)
 		)
 
 )
