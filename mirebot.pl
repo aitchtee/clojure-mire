@@ -27,7 +27,7 @@ filter_codes([H|T1], T2) :-
   member(C, ['(', ')', ':']),
   filter_codes(T1, T2).
 filter_codes([H|T1], [F|T2]) :-
-  code_type(F, to_lower(H)),
+  code_type (F, to_lower(H)),
   filter_codes(T1, T2).
 
 
