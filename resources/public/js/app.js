@@ -18,10 +18,29 @@ window.onload = function() {
   var roomData = document.getElementById('roomData');
   var logData = document.getElementById('logData');
   var grabButton = document.getElementById('grabButton');
+  var mapPic = document.getElementById('mappic');
 
   var socket;
 
   let lastSentCommand;
+
+  
+  var offsets = {"start"    : [0.35, 0.6 ],
+                "closet"    : [0.18, 0.6 ],
+                "roof"      : [0.0 , 0.6 ],
+                "hallway"   : [0.54, 0.6 ],
+                "fireplace" : [0.35, 0.4 ],
+                };
+
+  function movePlayerPic(room){
+    var position = $("#mappic").offset();
+   // alert("h" + mappic.clientHeight);
+   // alert("w" + mappic.clientWidth);
+    $("#playerpic").css({ position:'absolute', top: (position.top + mappic.clientHeight  * offsets[room][0]), 
+                                                left: (position.left +  mappic.clientWidth * offsets[room][1])});  
+  }
+  movePlayerPic("start");
+  
   
   function output(style, text){
   //messages.innerHTML += "<br/><span class='" + style + "'>" + text + "</span>";
@@ -209,6 +228,7 @@ window.onload = function() {
       
       // UPDATING
       
+      
       // set default state for nav btns
       let navigationButtons = [northButton, westButton, eastButton, southButton];
       for (i in navigationButtons)
@@ -276,6 +296,7 @@ window.onload = function() {
         grabButton.innerHTML = stuffName;
         grabButton.style.visibility = "visible";        
       }
+      movePlayerPic(currentState.name);
     }
     
    function setUpLogData() {
@@ -291,6 +312,8 @@ window.onload = function() {
       logData.innerHTML = logDataString;
 
   }
+
+
     
 };
 
