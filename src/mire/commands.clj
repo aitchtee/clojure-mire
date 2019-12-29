@@ -45,9 +45,9 @@
   	( do
 		  (println "You : " {:id *player-id*, :name *player-name*})
 		  (str (:desc @*current-room*)
-		       "\r\nExits: " (keys @(:exits @*current-room*)) "\r\n"
+		       "\r\nExits: " (keys @(:exits @*current-room*)) ". \r\n"
 		       (str (join "\r\n" (map #(str "There is " % " here.\r\n")
-		                           @(:items @*current-room*)))
+		                           @(:items @*current-room*))) 
 		       
 		            (join "\r\n" (map #(str "Player is " {:id (% :id), :name (% :name)} " here.\r\n")
 		                           (filter #(contains? @(:inhabitants @*current-room*) (% :name)) players-inventory)
@@ -60,7 +60,7 @@
 		       )
 
 		       "Maniacs " (join "\r\n" (map #(str % " here.\r\n")
-		                           @(:maniacs @*current-room*)))
+		                           @(:maniacs @*current-room*))) 
 
 	  	)
 		 )

@@ -1,6 +1,6 @@
-#
-# SWI Prolog mire bot (c) Sergey Sinitsa 2017.
-#
+%
+% SWI Prolog mire bot (c) Sergey Sinitsa 2017.
+%
 :- use_module(library(socket)).
 
 :- dynamic exit/1.
@@ -27,7 +27,7 @@ filter_codes([H|T1], T2) :-
   member(C, ['(', ')', ':']),
   filter_codes(T1, T2).
 filter_codes([H|T1], [F|T2]) :-
-  code_type (F, to_lower(H)),
+  code_type(F, to_lower(H)),
   filter_codes(T1, T2).
 
 
@@ -39,7 +39,15 @@ halprocess(Stream) :-
   flush_output(Stream),
   retractall(exit(_)).
 
-process(_).
+halprocess(_).
+
+process(Stream,[what,is,your,name,?]):-
+    !,format(atom(Name), '~w~n', [dupel]),
+  write(Name),
+  write(Stream,Name),
+  flush_output(Stream).
+process(Stream,Tokens):-
+  halprocess(Stream).
 
 loop(Stream) :-
   read_line_to_codes(Stream, Codes),
@@ -51,12 +59,12 @@ loop(Stream) :-
   nl,
   flush(),
   sleep(1),
-  process(Stream),
+  process(Stream,Tokens),
   loop(Stream).
 
  main :-
    setup_call_cleanup(
-     tcp_connect(localhost:3333, Stream, []),
+     tcp_connect(localhost:3335, Stream, []),
      loop(Stream),
      close(Stream)).
 

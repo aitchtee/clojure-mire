@@ -92,7 +92,7 @@
 	    (while (@player-streams name_)
 		    (do
 			    (async/send! *player-channel* "That name is in use; try again: ")
-			    (println "\nWhat is your name? ") (print prompt) (flush) (.flush *out* )
+			    (println "\nWhat is your name? \n") (print prompt) (flush) (.flush *out* )
 		      (def name_ (read-line))
 		    )
 	    )
@@ -106,7 +106,7 @@
 
     ;; We have to nest this in another binding call instead of using
     ;; the one above so *in* and *out* will be bound to the socket
-    (print "\nWhat is your name? ") (print prompt) (flush) (.flush *out* )
+    (print "\nWhat is your name? \n") (print prompt) (flush) (.flush *out* )
 
     (def player-name (get-unique-player-name (read-line)) )    ;; Устанавливаю переменной player-name имя игрока, введеное в консоли
 
