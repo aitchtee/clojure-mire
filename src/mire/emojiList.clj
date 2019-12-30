@@ -1,4 +1,4 @@
 (ns mire.emojiList)
 
-(def emoji (hash-set :no_emotion :sad :angry :happy :lovely :irritated :thoughtfull :clever))
+(def emoji (hash-set :noemotion :sad :angry :happy :lovely :irritated :thoughtfull :clever))
 

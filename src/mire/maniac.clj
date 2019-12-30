@@ -86,7 +86,7 @@
   						"You gen maniac with emotion "
   						(alter ( :maniacs (target-room @rooms) ) conj  target-emotion 	)    ;; write maniac into room
   			;(say_loud "maniac is appear") 
-  						"\r\n"
+  						".\r\n"
   			)
 		)
 

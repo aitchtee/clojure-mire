@@ -60,7 +60,7 @@
 		       )
 
 		       "Maniacs " (join "\r\n" (map #(str % " here.\r\n")
-		                           @(:maniacs @*current-room*))) 
+		                           @(:maniacs @*current-room*))) ".\r\n"
 
 	  	)
 		 )
