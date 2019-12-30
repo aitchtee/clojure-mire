@@ -30,6 +30,16 @@ window.onload = function() {
                 "roof"      : [0.0 , 0.6 ],
                 "hallway"   : [0.54, 0.6 ],
                 "fireplace" : [0.35, 0.4 ],
+                "slanting_alley" : [0.18, 0.4],
+                "railway_station" : [0.18, 0.26],
+                "platform934" : [0.35, 0.26],
+                "hogwarts" : [0.35, 0.1],
+                "wardrobe" : [0.18, 0.76],
+                "narnia" : [0.18, 0.95],
+                "promenade" : [0.54, 0.76],
+                "pargatory" : [0.54, 0.95],
+                "in" :   [ 0.68,  0.76],
+                "hell" : [ 0.85, 0.76],
                 };
 
   function movePlayerPic(room){
