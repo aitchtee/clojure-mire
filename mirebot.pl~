@@ -16,6 +16,7 @@ exits([Exit]) --> e(Exit).
 exits([Exit|Exits]) --> e(Exit), exits(Exits).
 parse_exits(Exits) --> [exits], exits(Exits), ['.'].
 parse_end_line --> [maniacs] , anything, ['.'].
+parse_end_line --> anything, [lock] , anything.
 parse_gen_maniac(Emoji) --> anything, [you],[gen], [maniac], [with], [emotion],  [Emoji], ['.'].
 
 parse_emoji(Tokens):- phrase(parse_gen_maniac(Emoji),Tokens,Rest),retractall(emoji(_)),assert(emoji(Emoji)).
@@ -43,8 +44,7 @@ halprocess(Stream) :-
   format(atom(Command), 'move ~w~n', [Direction]),
   write(Command),
   write(Stream, Command),
-  flush_output(Stream),
-  retractall(exit(_)),!.
+  flush_output(Stream),!.
 
 halprocess(_):-write('I am stuck').
 

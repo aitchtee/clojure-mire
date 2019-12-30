@@ -44,8 +44,7 @@ halprocess(Stream) :-
   format(atom(Command), 'move ~w~n', [Direction]),
   write(Command),
   write(Stream, Command),
-  flush_output(Stream),
-  retractall(exit(_)),!.
+  flush_output(Stream),!.
 
 halprocess(_):-write('I am stuck').
 
@@ -105,7 +104,7 @@ loop(Stream) :-
   writeln(Tokens2),
   flush(),
    (endSimb(Tokens2),
-    halprocess(Stream);true),
+    halprocess(Stream),sleep(1);true),
   fail.
 
  main :-
